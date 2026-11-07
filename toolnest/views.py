@@ -484,16 +484,17 @@ def word_to_pdf(request):
             {"error": "Only .docx Word documents are supported."},
         )
 
-    soffice_path = shutil.which("soffice")
+    soffice_path = shutil.which("soffice") or shutil.which("libreoffice")
+    abiword_path = shutil.which("abiword")
 
-    if not soffice_path:
+    if not soffice_path and not abiword_path:
         return render(
             request,
             "tools/word_to_pdf.html",
             {
-                "errpr": (
-                    "LibreOffice was not found."
-                    "Please install Libreoffice or configure its executable path."
+                "error": (
+                    "No document conversion engine (LibreOffice or AbiWord) was found on this server. "
+                    "Please install LibreOffice or AbiWord to enable Word to PDF conversion."
                 )
             },
         )
@@ -519,29 +520,53 @@ def word_to_pdf(request):
 
             validate_docx(input_file)
 
-            command = [
-                soffice_path,
-                "--headless",
-                "--nologo",
-                "--nodefault",
-                "--nofirststartwizard",
-                f"-env:UserInstallation={profile_dir.as_uri()}",
-                "--convert-to",
-                "pdf:writer_pdf_Export",
-                "--outdir",
-                str(output_dir),
-                str(input_file),
-            ]
+            result = None
 
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                timeout=WORD_CONVERSION_TIMEOUT,
-                check=False,
-            )
+            # Try LibreOffice if available
+            if soffice_path:
+                command = [
+                    soffice_path,
+                    "--headless",
+                    "--nologo",
+                    "--nodefault",
+                    "--nofirststartwizard",
+                    f"-env:UserInstallation={profile_dir.as_uri()}",
+                    "--convert-to",
+                    "pdf:writer_pdf_Export",
+                    "--outdir",
+                    str(output_dir),
+                    str(input_file),
+                ]
+                result = subprocess.run(
+                    command,
+                    capture_output=True,
+                    text=True,
+                    timeout=WORD_CONVERSION_TIMEOUT,
+                    check=False,
+                )
 
-            if result.returncode != 0 or not output_file.exists():
+            # Fallback to AbiWord if soffice is not installed or failed to produce output
+            if (not soffice_path or result.returncode != 0 or not output_file.exists()) and abiword_path:
+                abi_command = [
+                    abiword_path,
+                    "--to=pdf",
+                    str(input_file),
+                    "-o",
+                    str(output_file),
+                ]
+                result = subprocess.run(
+                    abi_command,
+                    capture_output=True,
+                    text=True,
+                    timeout=WORD_CONVERSION_TIMEOUT,
+                    check=False,
+                )
+                if not output_file.exists():
+                    fallback_in_input = input_dir / "document.pdf"
+                    if fallback_in_input.exists():
+                        shutil.move(str(fallback_in_input), str(output_file))
+
+            if not output_file.exists() or (result and result.returncode != 0 and not output_file.exists()):
                 raise RuntimeError("Document conversion failed.")
             
             if output_file.stat().st_size == 0:
@@ -691,6 +716,7 @@ def pdf_to_word(request):
                 )
             },
         )
+
 
 @require_http_methods(["GET", "POST"])
 def merge_pdf(request):

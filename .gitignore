@@ -2,8 +2,6 @@
 venv/
 .venv/
 
-
-
 # Python
 __pycache__/
 *.py[cod]
@@ -12,6 +10,10 @@ __pycache__/
 # Environment Variables
 .env
 
+# Database & Collected Static
+db.sqlite3
+staticfiles/
+media/
 
 # VS Code
 .vscode/
