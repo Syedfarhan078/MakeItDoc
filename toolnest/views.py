@@ -110,7 +110,7 @@ MAX_DOCX_UNCOMPRESSED_SIZE = 100 * 1024 * 1024 # 100 MB
 MAX_DOCX_FILES = 5000
 WORD_CONVERSION_TIMEOUT = 60
 
-# PDF TO WORD SETTINGS
+# PDF TO WORD SETTINGS (same used for pdf rotation)
 MAX_PDF_FILE_SIZE = 20 * 1024 * 1024
 MAX_PDF_PAGES = 100
 
@@ -966,3 +966,100 @@ def split_pdf(request):
             },
         )
 
+@require_http_methods(["GET", "POST"])
+def rotate_pdf(request):
+    if request.method == "GET":
+        return render(request, "tools/rotate_pdf.html")
+
+    uploaded_file = request.FILES.get("document")
+
+    rotation = request.POST.get("rotation")
+
+    if not uploaded_file:
+         return render(
+            request,
+            "tools/rotate_pdf.html",
+            {"error": "Please select a PDF file."},
+        )
+    
+    if uploaded_file.size == 0:
+        return render(
+            request,
+            "tools/rotate_pdf.html",
+            {"error": "The selected file is empty."},
+        )
+    
+    if uploaded_file.size > MAX_PDF_FILE_SIZE:
+        return render(
+            request,
+            "tools/rotate_pdf.html",
+            {"error": "The PDF file must be 20 MB or smaller."},
+        )
+
+    if not uploaded_file.name.lower().endswith(".pdf"):
+        return render(
+            request,
+            "tools/rotate_pdf.html",
+            {"error": "Only PDF files are supported."},
+        )
+
+    if rotation not in ["90", "180", "270"]:
+        return render(
+            request,
+            "tools/rotate_pdf.html",
+            {"error": "Please select a valid rotation angle."},
+        )
+
+    try:
+        with pymupdf.open(stream=uploaded_file.read(),filetype = "pdf",) as source_pdf:
+            if source_pdf.is_encrypted:
+                raise ValueError(
+                    "Password-protected PDFs are not supported."
+                )
+            
+            if len(source_pdf) == 0:
+                raise ValueError("The PDF contains no pages.")
+
+            if len(source_pdf) > MAX_PDF_PAGES:
+                raise ValueError(
+                    f"The PDF cannot contain more than {MAX_PDF_PAGES} pages."
+                )
+
+            rotation_angle = int(rotation)
+
+            for page in source_pdf:
+                page.set_rotation(
+                    (page.rotation + rotation_angle) % 360
+                )
+
+            pdf_buffer = BytesIO(
+                source_pdf.tobytes(garbage=4, deflate=True)
+            )
+
+        pdf_buffer.seek(0)
+
+        return FileResponse(
+            pdf_buffer,
+            as_attachment=True,
+            filename="MakeitDoc-rotated.pdf",
+            content_type="application/pdf",
+        )
+
+    except ValueError as exc:
+        return render(
+            request,
+            "tools/rotate_pdf.html",
+            {"error": str(exc)},
+        )
+
+    except (OSError, RuntimeError, pymupdf.FileDataError):
+        return render(
+            request,
+            "tools/rotate_pdf.html",
+            {
+                "error": (
+                    "Something went wrong while rotating your PDF. "
+                    "Please check your file and try again."
+                )
+            },
+        )

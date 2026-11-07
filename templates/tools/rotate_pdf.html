@@ -1,0 +1,430 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Rotate PDF — ToolNest{% endblock %}
+{% block breadcrumb %}Rotate PDF{% endblock %}
+
+{% block content %}
+
+<style>
+    .word-tool {
+        max-width: 760px;
+        margin: 20px auto;
+    }
+
+    .word-heading {
+        margin-bottom: 25px;
+    }
+
+    .word-heading h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .word-heading p {
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+
+    .word-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px;
+    }
+
+    .word-dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 190px;
+        border: 1.5px dashed var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        text-align: center;
+        padding: 25px;
+        transition: 0.2s;
+    }
+
+    .word-dropzone:hover,
+    .word-dropzone.drag-over {
+        border-color: var(--accent);
+        background: var(--surface-hover);
+    }
+
+    .word-icon {
+        font-size: 34px;
+        margin-bottom: 12px;
+    }
+
+    .word-dropzone strong {
+        font-size: 15px;
+        margin-bottom: 6px;
+    }
+
+    .word-dropzone span {
+        color: var(--text-muted);
+        font-size: 13px;
+    }
+
+    .word-file-input {
+        display: none;
+    }
+
+    .word-file-name {
+        margin-top: 15px;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .rotate-options {
+        margin-top: 25px;
+    }
+
+    .rotate-options h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 13px;
+    }
+
+    .rotate-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .rotate-option {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 115px;
+        padding: 15px 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.2s;
+        text-align: center;
+    }
+
+    .rotate-option:hover {
+        border-color: var(--accent);
+    }
+
+    .rotate-option:has(input:checked) {
+        border-color: var(--accent);
+        background: var(--surface-hover);
+    }
+
+    .rotate-option input {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        accent-color: var(--accent);
+    }
+
+    .rotate-symbol {
+        font-size: 30px;
+        line-height: 1;
+    }
+
+    .rotate-option strong {
+        font-size: 14px;
+    }
+
+    .word-error {
+        display: none;
+        margin-top: 15px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: rgba(239, 68, 68, 0.10);
+        color: #ef4444;
+        font-size: 13px;
+    }
+
+    .word-submit {
+        width: 100%;
+        margin-top: 22px;
+        padding: 13px;
+        border: none;
+        border-radius: 9px;
+        background: var(--accent);
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .word-submit:hover:not(:disabled) {
+        opacity: 0.9;
+    }
+
+    .word-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .word-info {
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 9px;
+        background: var(--surface-hover);
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 600px) {
+        .word-panel {
+            padding: 18px;
+        }
+
+        .word-heading h1 {
+            font-size: 24px;
+        }
+
+        .rotate-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rotate-option {
+            min-height: 85px;
+            flex-direction: row;
+        }
+    }
+</style>
+
+<div class="word-tool">
+
+    <div class="word-heading">
+        <h1>Rotate PDF</h1>
+        <p>Rotate your PDF pages clockwise and download the updated document.</p>
+    </div>
+
+    <div class="word-panel">
+
+        <form method="POST" enctype="multipart/form-data" id="rotateForm">
+            {% csrf_token %}
+
+            <label for="pdfFile" class="word-dropzone" id="dropzone">
+                <div class="word-icon">📄</div>
+                <strong>Choose a PDF file or drag it here</strong>
+                <span>PDF files only · Maximum size 20 MB</span>
+            </label>
+
+            <input
+                type="file"
+                name="document"
+                id="pdfFile"
+                class="word-file-input"
+                accept=".pdf,application/pdf"
+                required
+            >
+
+            <div class="word-file-name" id="fileName">
+                No file selected
+            </div>
+
+            <div class="rotate-options">
+
+                <h3>Choose rotation angle</h3>
+
+                <div class="rotate-grid">
+
+                    <label class="rotate-option">
+                        <input
+                            type="radio"
+                            name="rotation"
+                            value="90"
+                            checked
+                        >
+                        <span class="rotate-symbol">↻</span>
+                        <strong>90° Clockwise</strong>
+                    </label>
+
+                    <label class="rotate-option">
+                        <input
+                            type="radio"
+                            name="rotation"
+                            value="180"
+                        >
+                        <span class="rotate-symbol">↻</span>
+                        <strong>180°</strong>
+                    </label>
+
+                    <label class="rotate-option">
+                        <input
+                            type="radio"
+                            name="rotation"
+                            value="270"
+                        >
+                        <span class="rotate-symbol">↺</span>
+                        <strong>270° Clockwise</strong>
+                    </label>
+
+                </div>
+
+            </div>
+
+            {% if error %}
+                <div class="word-error" style="display:block;">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <div class="word-error" id="clientError"></div>
+
+            <button
+                type="submit"
+                class="word-submit"
+                id="rotateButton"
+                disabled
+            >
+                Rotate PDF
+            </button>
+
+        </form>
+
+        <div class="word-info">
+            <strong>File requirements</strong><br>
+            • PDF format only<br>
+            • Maximum file size: 20 MB<br>
+            • Maximum pages: 100<br>
+            • All pages will be rotated by the selected angle<br>
+            • Password-protected PDFs are not supported
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const fileInput = document.getElementById("pdfFile");
+    const dropzone = document.getElementById("dropzone");
+    const fileName = document.getElementById("fileName");
+    const rotateButton = document.getElementById("rotateButton");
+    const rotateForm = document.getElementById("rotateForm");
+    const clientError = document.getElementById("clientError");
+
+    const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+    function showError(message) {
+        clientError.textContent = message;
+        clientError.style.display = "block";
+    }
+
+    function clearError() {
+        clientError.textContent = "";
+        clientError.style.display = "none";
+    }
+
+    function validateFile(file) {
+
+        clearError();
+
+        if (!file) {
+            return false;
+        }
+
+        if (!file.name.toLowerCase().endsWith(".pdf")) {
+            showError("Please select a PDF file.");
+            return false;
+        }
+
+        if (file.size === 0) {
+            showError("The selected file is empty.");
+            return false;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            showError("The PDF file must be 20 MB or smaller.");
+            return false;
+        }
+
+        return true;
+    }
+
+    function updateFile() {
+
+        const file = fileInput.files[0];
+
+        if (!file) {
+            fileName.textContent = "No file selected";
+            rotateButton.disabled = true;
+            return;
+        }
+
+        if (!validateFile(file)) {
+            fileInput.value = "";
+            fileName.textContent = "No file selected";
+            rotateButton.disabled = true;
+            return;
+        }
+
+        const size = (file.size / (1024 * 1024)).toFixed(2);
+
+        fileName.textContent = `${file.name} · ${size} MB`;
+
+        rotateButton.disabled = false;
+    }
+
+    fileInput.addEventListener("change", updateFile);
+
+    dropzone.addEventListener("dragover", function (event) {
+        event.preventDefault();
+        dropzone.classList.add("drag-over");
+    });
+
+    dropzone.addEventListener("dragleave", function () {
+        dropzone.classList.remove("drag-over");
+    });
+
+    dropzone.addEventListener("drop", function (event) {
+        event.preventDefault();
+        dropzone.classList.remove("drag-over");
+
+        const files = event.dataTransfer.files;
+
+        if (!files.length) return;
+
+        const transfer = new DataTransfer();
+        transfer.items.add(files[0]);
+
+        fileInput.files = transfer.files;
+
+        updateFile();
+    });
+
+    rotateForm.addEventListener("submit", function (event) {
+
+        clearError();
+
+        const file = fileInput.files[0];
+
+        if (!validateFile(file)) {
+            event.preventDefault();
+            return;
+        }
+
+        rotateButton.disabled = true;
+        rotateButton.textContent = "Rotating PDF...";
+
+    });
+
+});
+</script>
+
+{% endblock %}
