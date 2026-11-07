@@ -1,7 +1,7 @@
 
 {% extends "base.html" %}
 
-{% block title %}Overview — ToolNest{% endblock %}
+{% block title %}Overview — MakeitDoc{% endblock %}
 {% block breadcrumb %}Overview{% endblock %}
 
 {% block content %}
@@ -119,6 +119,18 @@
             <p>Correct page orientation in a few steps.</p>
             <span class="card-category">PDF MANAGEMENT</span>
         </a>
+
+            <a href="{% url 'compress_pdf' %}"
+            class="tool-card"
+            data-tool="Compress your pdf into smaller size">
+                <div class="tool-card-top">
+                    <span class="tool-icon icon-yellow">⟳</span>
+                    <span class="card-arrow">↗</span>
+                </div>
+                <h3>Compress PDF</h3>
+                <p>Compress PDF in a few steps.</p>
+                <span class="card-category">PDF MANAGEMENT</span>
+            </a>
     </div>
 </section>
 

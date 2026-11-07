@@ -1,0 +1,447 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Compress PDF — MakeitDoc{% endblock %}
+{% block breadcrumb %}Compress PDF{% endblock %}
+
+{% block content %}
+
+<style>
+    .word-tool {
+        max-width: 760px;
+        margin: 20px auto;
+    }
+
+    .word-heading {
+        margin-bottom: 25px;
+    }
+
+    .word-heading h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .word-heading p {
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+
+    .word-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px;
+    }
+
+    .word-dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 190px;
+        border: 1.5px dashed var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        text-align: center;
+        padding: 25px;
+        transition: 0.2s;
+    }
+
+    .word-dropzone:hover,
+    .word-dropzone.drag-over {
+        border-color: var(--accent);
+        background: var(--surface-hover);
+    }
+
+    .word-icon {
+        font-size: 34px;
+        margin-bottom: 12px;
+    }
+
+    .word-dropzone strong {
+        font-size: 15px;
+        margin-bottom: 6px;
+    }
+
+    .word-dropzone span {
+        color: var(--text-muted);
+        font-size: 13px;
+    }
+
+    .word-file-input {
+        display: none;
+    }
+
+    .word-file-name {
+        margin-top: 15px;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .compress-options {
+        margin-top: 25px;
+    }
+
+    .compress-options h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 13px;
+    }
+
+    .compress-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .compress-option:hover {
+        border-color: var(--accent);
+    }
+
+    .compress-option:has(input:checked) {
+        border-color: var(--accent);
+        background: var(--surface-hover);
+    }
+
+    .compress-option input {
+        margin-top: 4px;
+        accent-color: var(--accent);
+    }
+
+    .compress-option strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .compress-option small {
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .compress-tag {
+        display: inline-block;
+        margin-left: 7px;
+        padding: 3px 7px;
+        border-radius: 5px;
+        background: var(--surface-hover);
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .word-error {
+        display: none;
+        margin-top: 15px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: rgba(239, 68, 68, 0.10);
+        color: #ef4444;
+        font-size: 13px;
+    }
+
+    .word-submit {
+        width: 100%;
+        margin-top: 22px;
+        padding: 13px;
+        border: none;
+        border-radius: 9px;
+        background: var(--accent);
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .word-submit:hover:not(:disabled) {
+        opacity: 0.9;
+    }
+
+    .word-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .word-info {
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 9px;
+        background: var(--surface-hover);
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 600px) {
+        .word-panel {
+            padding: 18px;
+        }
+
+        .word-heading h1 {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<div class="word-tool">
+
+    <div class="word-heading">
+        <h1>Compress PDF</h1>
+        <p>Optimize your PDF file to reduce unnecessary file size.</p>
+    </div>
+
+    <div class="word-panel">
+
+        <form method="POST" enctype="multipart/form-data" id="compressForm">
+            {% csrf_token %}
+
+            <label for="pdfFile" class="word-dropzone" id="dropzone">
+                <div class="word-icon">📄</div>
+                <strong>Choose a PDF file or drag it here</strong>
+                <span>PDF files only · Maximum size 20 MB</span>
+            </label>
+
+            <input
+                type="file"
+                name="document"
+                id="pdfFile"
+                class="word-file-input"
+                accept=".pdf,application/pdf"
+                required
+            >
+
+            <div class="word-file-name" id="fileName">
+                No file selected
+            </div>
+
+            <div class="compress-options">
+
+                <h3>Choose compression level</h3>
+
+                <label class="compress-option">
+                    <input
+                        type="radio"
+                        name="compression_level"
+                        value="low"
+                        checked
+                    >
+
+                    <span>
+                        <strong>
+                            Low Compression
+                            <span class="compress-tag">Best Quality</span>
+                        </strong>
+                        <small>
+                            Prioritize preserving the original PDF content
+                            and quality.
+                        </small>
+                    </span>
+                </label>
+
+                <label class="compress-option">
+                    <input
+                        type="radio"
+                        name="compression_level"
+                        value="medium"
+                    >
+
+                    <span>
+                        <strong>
+                            Medium Compression
+                            <span class="compress-tag">Balanced</span>
+                        </strong>
+                        <small>
+                            Apply additional stream compression while
+                            retaining the original image quality.
+                        </small>
+                    </span>
+                </label>
+
+                <label class="compress-option">
+                    <input
+                        type="radio"
+                        name="compression_level"
+                        value="high"
+                    >
+
+                    <span>
+                        <strong>
+                            High Compression
+                            <span class="compress-tag">Maximum Optimization</span>
+                        </strong>
+                        <small>
+                            Apply stronger available PDF stream
+                            compression and object cleanup.
+                        </small>
+                    </span>
+                </label>
+
+            </div>
+
+            {% if error %}
+                <div class="word-error" style="display:block;">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <div class="word-error" id="clientError"></div>
+
+            <button
+                type="submit"
+                class="word-submit"
+                id="compressButton"
+                disabled
+            >
+                Compress PDF
+            </button>
+
+        </form>
+
+        <div class="word-info">
+            <strong>File requirements</strong><br>
+            • PDF format only<br>
+            • Maximum file size: 20 MB<br>
+            • Maximum pages: 100<br>
+            • Password-protected PDFs are not supported<br>
+            • Actual file-size reduction depends on the original PDF content.
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const fileInput = document.getElementById("pdfFile");
+    const dropzone = document.getElementById("dropzone");
+    const fileName = document.getElementById("fileName");
+    const compressButton = document.getElementById("compressButton");
+    const compressForm = document.getElementById("compressForm");
+    const clientError = document.getElementById("clientError");
+
+    const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+    function showError(message) {
+        clientError.textContent = message;
+        clientError.style.display = "block";
+    }
+
+    function clearError() {
+        clientError.textContent = "";
+        clientError.style.display = "none";
+    }
+
+    function validateFile(file) {
+
+        clearError();
+
+        if (!file) {
+            return false;
+        }
+
+        if (!file.name.toLowerCase().endsWith(".pdf")) {
+            showError("Please select a PDF file.");
+            return false;
+        }
+
+        if (file.size === 0) {
+            showError("The selected file is empty.");
+            return false;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            showError("The PDF file must be 20 MB or smaller.");
+            return false;
+        }
+
+        return true;
+    }
+
+    function updateFile() {
+
+        const file = fileInput.files[0];
+
+        if (!file) {
+            fileName.textContent = "No file selected";
+            compressButton.disabled = true;
+            return;
+        }
+
+        if (!validateFile(file)) {
+            fileInput.value = "";
+            fileName.textContent = "No file selected";
+            compressButton.disabled = true;
+            return;
+        }
+
+        const size = (file.size / (1024 * 1024)).toFixed(2);
+
+        fileName.textContent = `${file.name} · ${size} MB`;
+
+        compressButton.disabled = false;
+    }
+
+    fileInput.addEventListener("change", updateFile);
+
+    dropzone.addEventListener("dragover", function (event) {
+        event.preventDefault();
+        dropzone.classList.add("drag-over");
+    });
+
+    dropzone.addEventListener("dragleave", function () {
+        dropzone.classList.remove("drag-over");
+    });
+
+    dropzone.addEventListener("drop", function (event) {
+
+        event.preventDefault();
+        dropzone.classList.remove("drag-over");
+
+        const files = event.dataTransfer.files;
+
+        if (!files.length) return;
+
+        const transfer = new DataTransfer();
+        transfer.items.add(files[0]);
+
+        fileInput.files = transfer.files;
+
+        updateFile();
+    });
+
+    compressForm.addEventListener("submit", function (event) {
+
+        clearError();
+
+        const file = fileInput.files[0];
+
+        if (!validateFile(file)) {
+            event.preventDefault();
+            return;
+        }
+
+        compressButton.disabled = true;
+        compressButton.textContent = "Compressing PDF...";
+
+    });
+
+});
+</script>
+
+{% endblock %}

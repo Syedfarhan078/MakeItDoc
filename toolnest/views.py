@@ -1063,3 +1063,133 @@ def rotate_pdf(request):
                 )
             },
         )
+
+
+
+@require_http_methods(["GET", "POST"])
+def compress_pdf(request):
+
+    if request.method == "GET":
+        return render(request, "tools/compress_pdf.html")
+
+    uploaded_file = request.FILES.get("document")
+    compression_level = request.POST.get("compression_level")
+
+    if not uploaded_file:
+        return render(
+            request,
+            "tools/compress_pdf.html",
+            {"error": "Please select a PDF file."},
+        )
+
+    if uploaded_file.size == 0:
+        return render(
+            request,
+            "tools/compress_pdf.html",
+            {"error": "The selected file is empty."},
+        )
+
+    if uploaded_file.size > MAX_PDF_FILE_SIZE:
+        return render(
+            request,
+            "tools/compress_pdf.html",
+            {"error": "The PDF file must be 20 MB or smaller."},
+        )
+
+    if not uploaded_file.name.lower().endswith(".pdf"):
+        return render(
+            request,
+            "tools/compress_pdf.html",
+            {"error": "Only PDF files are supported."},
+        )
+
+    compression_settings = {
+        "low": {
+            "quality": 85,
+            "dpi_threshold": 200,
+            "dpi_target": 150,
+        },
+        "medium": {
+            "quality": 75,
+            "dpi_threshold": 160,
+            "dpi_target": 120,
+        },
+        "high": {
+            "quality": 60,
+            "dpi_threshold": 120,
+            "dpi_target": 96,
+        },
+    }
+
+    if compression_level not in compression_settings:
+        return render(
+            request,
+            "tools/compress_pdf.html",
+            {"error": "Please select a valid compression level."},
+        )
+
+    try:
+        settings = compression_settings[compression_level]
+
+        with pymupdf.open(
+            stream=uploaded_file.read(),
+            filetype="pdf",
+        ) as source_pdf:
+
+            if source_pdf.is_encrypted:
+                raise ValueError(
+                    "Password-protected PDFs are not supported."
+                )
+
+            if len(source_pdf) == 0:
+                raise ValueError("The PDF contains no pages.")
+
+            if len(source_pdf) > MAX_PDF_PAGES:
+                raise ValueError(
+                    f"The PDF cannot contain more than {MAX_PDF_PAGES} pages."
+                )
+
+          
+            source_pdf.rewrite_images(
+                quality=settings["quality"],
+                dpi_threshold=settings["dpi_threshold"],
+                dpi_target=settings["dpi_target"],
+            )
+
+            
+            pdf_buffer = BytesIO(
+                source_pdf.tobytes(
+                    garbage=4,
+                    deflate=True,
+                    deflate_images=True,
+                    deflate_fonts=True,
+                )
+            )
+
+        pdf_buffer.seek(0)
+
+        return FileResponse(
+            pdf_buffer,
+            as_attachment=True,
+            filename="MakeitDoc-compressed.pdf",
+            content_type="application/pdf",
+        )
+
+    except ValueError as exc:
+        return render(
+            request,
+            "tools/compress_pdf.html",
+            {"error": str(exc)},
+        )
+
+    except (OSError, RuntimeError, pymupdf.FileDataError):
+        return render(
+            request,
+            "tools/compress_pdf.html",
+            {
+                "error": (
+                    "Something went wrong while compressing your PDF. "
+                    "Please check your file and try again."
+                )
+            },
+        )

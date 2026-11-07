@@ -9,6 +9,7 @@ urlpatterns = [
     path("tools/merge-pdf/", views.merge_pdf, name="merge_pdf"),
     path("tools/split-pdf/", views.split_pdf, name="split_pdf"),
     path("tools/rotate-pdf/", views.rotate_pdf, name="rotate_pdf"),
+    path("tools/compress-pdf/", views.compress_pdf, name="compress_pdf"),
     path("tools/<slug:tool_slug>/", views.tool_page, name="tool_page"),
 
 ]
