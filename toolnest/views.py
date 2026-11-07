@@ -119,6 +119,9 @@ MAX_MERGE_FILES = 10
 MAX_MERGE_TOTAL_SIZE = 100 * 1024 * 1024       #100 MB
 MAX_MERGE_TOTAL_PAGES = 300
 
+#SPLIT PDF SETTINGS
+MAX_SPLIT_OUTPUT_FILES = 100
+
 PDF_DPI = 150
 
 A4_WIDTH = 1240
@@ -809,3 +812,157 @@ def merge_pdf(request):
 
         finally:
             merged_pdf.close()
+
+
+@require_http_methods(["GET", "POST"])
+def split_pdf(request):
+    if request.method == "GET":
+        return render(request, "tools/split_pdf.html")
+    
+    uploaded_file = request.FILES.get("document")
+    split_mode = request.POST.get("split_mode")
+    page_range = request.POST.get("page_range", "").strip()
+
+    if not uploaded_file:
+        return render(
+            request,
+            "tools/split_to_pdf.html",
+            {"error": "Please select a PDF file."},
+        )
+
+    if uploaded_file.size == 0:
+        return render(
+            request,
+            "tools/split_pdf.html",
+            {"error": "The selected file is empty."},
+        )
+    
+    if uploaded_file.size > MAX_PDF_FILE_SIZE:
+         return render(
+            request,
+            "tools/split_pdf.html",
+            {"error": "The PDF file must be 20 MB or smaller."},
+        )
+
+    if not uploaded_file.name.lower().endswith(".pdf"):
+        return render(
+            request,
+            "tools/split_pdf.html",
+            {"error": "Only PDF files are supported."},
+        )
+    
+    try:
+        with pymupdf.open(stream = uploaded_file.read(), filetype="pdf") as source_pdf:
+
+            if source_pdf.is_encrypted:
+                raise ValueError("Password-protected PDFs are not supported.")
+            
+            total_pages = len(source_pdf)
+
+            if tool_page == 0:
+                raise ValueError("The PDF contains no pages.")
+            
+            if total_pages > MAX_PDF_PAGES:
+                raise ValueError(
+                    f"The PDF cannot contain more than {MAX_PDF_PAGES} pages."
+                )
+            
+            if split_mode == "individual":
+
+                if total_pages > MAX_SPLIT_OUTPUT_FILES:
+                    raise ValueError("Too many output files.")
+                
+                zip_buffer = BytesIO()
+
+                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                    for page_number in range(total_pages):
+                        output_pdf = pymupdf.open()
+
+                        try:
+                            output_pdf.insert_pdf(
+                                source_pdf,
+                                from_page = page_number,
+                                to_page=page_number,
+                            )
+                        
+                            pdf_bytes = output_pdf.tobytes()
+
+                            zip_file.writestr(
+                                f"page_{page_number + 1}.pdf",
+                                pdf_bytes,
+                            )
+                        finally:
+                            output_pdf.close()
+
+                zip_buffer.seek(0)
+
+                return FileResponse(
+                    zip_buffer,
+                    as_attachment=True,
+                    filename="MakeitDoc-split-pdfs.zip",
+                    content_type = "application/zip",
+                )
+                    
+            elif split_mode == "custom":
+                try:
+                    start_page, end_page = map(
+                        int, page_range.split("-")
+                    )
+
+                except (ValueError, TypeError):
+                    raise ValueError(
+                        "Enter a valid page range, such as 1-5."
+                    )
+
+                if start_page < 1 or end_page < start_page:
+                    raise ValueError("Please enter a valid page range.")
+                
+                if end_page > total_pages:
+                    raise ValueError(
+                        f"This PDF contains only {total_pages} pages."
+                    )
+
+                output_pdf = pymupdf.open()
+
+                try:
+                    output_pdf.insert_pdf(
+                        source_pdf,
+                        from_page = start_page - 1,
+                        to_page = end_page - 1,
+                    )
+
+                    pdf_buffer = BytesIO(output_pdf.tobytes())
+
+                finally:
+                    output_pdf.close()
+
+                
+                return FileResponse(
+                    pdf_buffer,
+                    as_attachment=True,
+                    filename="MakeitDoc-extracted-pages.pdf",
+                    content_type="application/pdf",
+                )
+
+            else:
+                raise ValueError("Please select a valid split option.")
+
+    except ValueError as exc:
+        return render(
+            request,
+            "tools/split_pdf.html",
+            {"error": str(exc)},
+        )
+
+    except (OSError, RuntimeError, pymupdf.FileDataError):
+        return render(
+            request,
+            "tools/split_pdf.html",
+            {
+                "error": (
+                    "Something went wrong while processing your PDF. "
+                    "Please check the file and try again."
+                )
+            },
+        )
+
