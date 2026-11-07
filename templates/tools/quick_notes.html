@@ -2740,7 +2740,7 @@ document.addEventListener("DOMContentLoaded", function () {
         outCanvas.toBlob(blob => {
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
-            a.download = `${boardTitleInput.value.trim() || "whiteboard"}.png`;
+            a.download = `${boardTitleInput.value.trim() || "notes"}-MakeitDoc.png`;
             a.click();
             exportModal.style.display = "none";
         });
@@ -2802,7 +2802,7 @@ ${svgBody}
         const blob = new Blob([svgContent], { type: "image/svg+xml" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = `${boardTitleInput.value.trim() || "whiteboard"}.svg`;
+        a.download = `${boardTitleInput.value.trim() || "notes"}-MakeitDoc.svg`;
         a.click();
         exportModal.style.display = "none";
     });
@@ -2816,7 +2816,7 @@ ${svgBody}
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = `${boardTitleInput.value.trim() || "whiteboard"}.notes`;
+        a.download = `${boardTitleInput.value.trim() || "notes"}-MakeitDoc.notes`;
         a.click();
         exportModal.style.display = "none";
     });

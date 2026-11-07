@@ -349,10 +349,13 @@ def image_to_pdf(request):
 
         pdf_buffer.seek(0)
 
+        first_stem = Path(uploaded_images[0].name).stem.replace('"', '').strip() if uploaded_images and uploaded_images[0].name else "images"
+        out_filename = f"{first_stem}-MakeitDoc.pdf"
+
         return FileResponse(
             pdf_buffer,
             as_attachment=True,
-            filename="toolnest-images.pdf",
+            filename=out_filename,
             content_type="application/pdf",
         )
     
@@ -579,10 +582,13 @@ def word_to_pdf(request):
             
         pdf_buffer = BytesIO(pdf_data)
 
+        base_stem = Path(uploaded_files.name).stem.replace('"', '').strip() if uploaded_files and uploaded_files.name else "document"
+        out_filename = f"{base_stem}-MakeitDoc.pdf"
+
         return FileResponse(
             pdf_buffer,
             as_attachment=True,
-            filename="toolnest-document.pdf",
+            filename=out_filename,
             content_type="application/pdf",
         )
     
@@ -676,10 +682,13 @@ def pdf_to_word(request):
 
             docx_data = output_file.read_bytes()
 
+        base_stem = Path(uploaded_file.name).stem.replace('"', '').strip() if uploaded_file and uploaded_file.name else "document"
+        out_filename = f"{base_stem}-MakeitDoc.docx"
+
         return FileResponse(
             BytesIO(docx_data),
             as_attachment=True,
-            filename="toolnest-document.docx",
+            filename=out_filename,
             content_type=(
                 "application/vnd.openxmlformats-officedocument."
                 "wordprocessingml.document"
@@ -810,10 +819,13 @@ def merge_pdf(request):
                 
                 pdf_buffer = BytesIO(merged_pdf.tobytes())
 
+            base_stem = Path(uploaded_files[0].name).stem.replace('"', '').strip() if uploaded_files and uploaded_files[0].name else "merged"
+            out_filename = f"{base_stem}-merged-MakeitDoc.pdf"
+
             return FileResponse(
                 pdf_buffer,
                 as_attachment=True,
-                filename="MakeitDoc-merged.pdf",
+                filename=out_filename,
                 content_type = "application/pdf",
             )
         
@@ -922,10 +934,12 @@ def split_pdf(request):
 
                 zip_buffer.seek(0)
 
+                base_stem = Path(uploaded_file.name).stem.replace('"', '').strip() if uploaded_file and uploaded_file.name else "split"
+
                 return FileResponse(
                     zip_buffer,
                     as_attachment=True,
-                    filename="MakeitDoc-split-pdfs.zip",
+                    filename=f"{base_stem}-split-MakeitDoc.zip",
                     content_type = "application/zip",
                 )
                     
@@ -963,10 +977,13 @@ def split_pdf(request):
                     output_pdf.close()
 
                 
+                base_stem = Path(uploaded_file.name).stem.replace('"', '').strip() if uploaded_file and uploaded_file.name else "document"
+                out_filename = f"{base_stem}-pages-{start_page}-{end_page}-MakeitDoc.pdf"
+
                 return FileResponse(
                     pdf_buffer,
                     as_attachment=True,
-                    filename="MakeitDoc-extracted-pages.pdf",
+                    filename=out_filename,
                     content_type="application/pdf",
                 )
 
@@ -1064,10 +1081,13 @@ def rotate_pdf(request):
 
         pdf_buffer.seek(0)
 
+        base_stem = Path(uploaded_file.name).stem.replace('"', '').strip() if uploaded_file and uploaded_file.name else "rotated"
+        out_filename = f"{base_stem}-rotated-MakeitDoc.pdf"
+
         return FileResponse(
             pdf_buffer,
             as_attachment=True,
-            filename="MakeitDoc-rotated.pdf",
+            filename=out_filename,
             content_type="application/pdf",
         )
 
@@ -1194,10 +1214,13 @@ def compress_pdf(request):
 
         pdf_buffer.seek(0)
 
+        base_stem = Path(uploaded_file.name).stem.replace('"', '').strip() if uploaded_file and uploaded_file.name else "compressed"
+        out_filename = f"{base_stem}-compressed-MakeitDoc.pdf"
+
         return FileResponse(
             pdf_buffer,
             as_attachment=True,
-            filename="MakeitDoc-compressed.pdf",
+            filename=out_filename,
             content_type="application/pdf",
         )
 
@@ -1309,10 +1332,13 @@ def protect_pdf(request):
 
         pdf_buffer.seek(0)
 
+        base_stem = Path(uploaded_file.name).stem.replace('"', '').strip() if uploaded_file and uploaded_file.name else "protected"
+        out_filename = f"{base_stem}-protected-MakeitDoc.pdf"
+
         return FileResponse(
             pdf_buffer,
             as_attachment=True,
-            filename="MakeitDoc-protected.pdf",
+            filename=out_filename,
             content_type="application/pdf",
         )
 

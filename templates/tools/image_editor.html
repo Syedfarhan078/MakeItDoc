@@ -1433,7 +1433,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         currentFileSize = (file.size / (1024 * 1024)).toFixed(2) + " MB";
         currentFileName = file.name.replace(/\.[^/.]+$/, "");
-        exportFilenameInput.value = `${currentFileName}-edited`;
+        exportFilenameInput.value = `${currentFileName}-MakeitDoc`;
 
         const reader = new FileReader();
         reader.onload = function (e) {
@@ -2042,7 +2042,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const format = exportFormatSelect.value;
         const quality = parseInt(exportQualityRange.value, 10) / 100;
 
-        let filename = (exportFilenameInput.value.trim() || "makeitdoc-edited");
+        let filename = (exportFilenameInput.value.trim() || `${currentFileName || "image"}-MakeitDoc`);
         const ext = format === "image/png" ? ".png" : format === "image/webp" ? ".webp" : ".jpg";
         if (!filename.toLowerCase().endsWith(ext)) {
             filename += ext;

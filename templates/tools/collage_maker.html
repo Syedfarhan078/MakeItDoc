@@ -1736,7 +1736,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const format = exportFormat.value;
         const quality = 0.92;
-        let filename = (exportFilename.value.trim() || "makeitdoc-collage");
+        let filename = (exportFilename.value.trim() || "collage-MakeitDoc");
         const ext = format === "image/png" ? ".png" : format === "image/webp" ? ".webp" : ".jpg";
         if (!filename.toLowerCase().endsWith(ext)) filename += ext;
 
