@@ -114,6 +114,11 @@ WORD_CONVERSION_TIMEOUT = 60
 MAX_PDF_FILE_SIZE = 20 * 1024 * 1024
 MAX_PDF_PAGES = 100
 
+#MERGE PDF SETTINGS
+MAX_MERGE_FILES = 10
+MAX_MERGE_TOTAL_SIZE = 100 * 1024 * 1024       #100 MB
+MAX_MERGE_TOTAL_PAGES = 300
+
 PDF_DPI = 150
 
 A4_WIDTH = 1240
@@ -683,3 +688,124 @@ def pdf_to_word(request):
                 )
             },
         )
+
+@require_http_methods(["GET", "POST"])
+def merge_pdf(request):
+
+    if request.method == "GET":
+        return render(request, "tools/merge_pdf.html")
+    
+    uploaded_files = request.FILES.getlist("documents")
+
+    if len(uploaded_files) < 2:
+        return render(
+            request,
+            "tools/merge_pdf.html",
+            {"error": "Please select at least two PDF Files."},
+        )
+
+    if len(uploaded_files) > MAX_MERGE_FILES:
+        return render(
+            request,
+            "tools/merge_pdf.html",
+            {"error": f"You can merge a maximum of {MAX_MERGE_FILES} PDF files."},
+        )
+
+    total_size = sum(file.size for file in uploaded_files)
+
+    if total_size > MAX_MERGE_TOTAL_SIZE:
+        return render(
+            request,
+            "tools/merge_pdf.html",
+            {"error": "The combined file size must not exceed 100 MB."},
+        )
+
+    for uploaded_file in uploaded_files:
+        if uploaded_file.size == 0:
+            return render(
+                request,
+                "tools/merge_pdf.html",
+                {"error": "One of the selected files is empty."},
+            )
+
+        if uploaded_file.size > MAX_PDF_FILE_SIZE:
+            return render(
+                request,
+                "tools/merge_pdf.html",
+                {"error": "Each PDF file must be 20 MB or smaller."},
+            )
+        
+        if not uploaded_file.name.lower().endswith(".pdf"):
+            return render(
+                request,
+                "tools/merge_pdf.html",
+                {"error": "Only PDF files are supported."},
+            )
+        
+        merged_pdf = pymupdf.open()
+        total_pages = 0
+
+        try:
+            with tempfile.TemporaryDirectory(prefix="toolnest_merge_") as temp_dir:
+                temp_path = Path(temp_dir)
+
+                for index, uploaded_file in enumerate(uploaded_files):
+                    input_path = temp_path / f"document_{index}.pdf"
+
+                    with input_path.open("wb") as destination:
+                        for chunk in uploaded_file.chunks():
+                            destination.write(chunk)
+                    
+                    with pymupdf.open(input_path) as source_pdf:
+                        if source_pdf.is_encrypted:
+                            raise ValueError(
+                                f"{uploaded_file.name} is password protected."
+                            )
+                        
+                        if len(source_pdf) == 0:
+                            raise ValueError(
+                                f"{uploaded_file.name} contains no pages."
+                            )
+                        total_pages += len(source_pdf)
+
+
+                        if total_pages > MAX_MERGE_TOTAL_PAGES:
+                            raise ValueError(
+                                "The combined PDFs cannot exceed 300 pages."
+                            )
+                        
+                        merged_pdf.insert_pdf(source_pdf)
+                
+                if merged_pdf.page_count == 0:
+                    raise ValueError("No pages were available to merge.")
+                
+                pdf_buffer = BytesIO(merged_pdf.tobytes())
+
+            return FileResponse(
+                pdf_buffer,
+                as_attachment=True,
+                filename="MakeitDoc-merged.pdf",
+                content_type = "application/pdf",
+            )
+        
+        except ValueError as exc:
+            return render(
+                request,
+                "tools/merge_pdf.html",
+                {"error": str(exc)},
+            )
+
+        except (OSError, RuntimeError, pymupdf.FileDataError):
+            return render(
+                request,
+            "tools/merge_pdf.html",
+            {
+                "error": (
+                    "Something went wrong while merging your PDFs. "
+                    "Please check your files and try again."
+                )
+            },
+        )
+
+        finally:
+            merged_pdf.close()
