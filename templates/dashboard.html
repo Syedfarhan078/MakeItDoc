@@ -1,205 +1,377 @@
-
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Overview — MakeitDoc{% endblock %}
+{% block title %}MakeitDoc — Document & Creative Studio{% endblock %}
 {% block breadcrumb %}Overview{% endblock %}
 
 {% block content %}
-<section class="welcome-section">
-    <div class="eyebrow">
-        <span class="eyebrow-line"></span>
-        YOUR PERSONAL WORKSPACE
-    </div>
+<div class="overview-container">
 
-    <h1>Everything you need.<br>
-        <span class="heading-muted">Nothing you don't.</span>
-    </h1>
-
-    <p class="welcome-description">
-        A calmer way to handle documents, capture ideas,
-        and get everyday tasks done.
-    </p>
-
-    <div class="search-wrapper">
-        <span class="search-icon" aria-hidden="true">⌕</span>
-        <input
-            type="search"
-            id="toolSearch"
-            placeholder="Search tools, e.g. merge PDF..."
-            autocomplete="off"
-            aria-label="Search tools"
-            aria-describedby="searchStatus"
-        >
-        <kbd>SEARCH</kbd>
-    </div>
-    <p class="search-status" id="searchStatus" aria-live="polite"></p>
-</section>
-
-<section class="tool-section" id="pdf-tools">
-    <div class="section-heading">
-        <div>
-            <div class="section-kicker">01 / DOCUMENTS</div>
-            <h2>PDF workspace</h2>
-            <p class="section-description">
-                Your everyday document utilities, together in one place.
+    <!-- ==========================================
+         A. COMPACT EDITORIAL INTRODUCTION
+         ========================================== -->
+    <header class="overview-header">
+        <div class="overview-header-main">
+            <span class="overview-kicker">STUDIO WORKSPACE</span>
+            <h1 class="overview-title">Everything you need to work with files.</h1>
+            <p class="overview-subtitle">
+                Convert, organize, edit and create — all in one place. No account required.
             </p>
         </div>
-        <span class="section-count">06 TOOLS</span>
-    </div>
 
-    <div class="tool-grid">
-        <a href="{% url 'tool_page' 'merge-pdf' %}"
-           class="tool-card"
-           data-tool="merge pdf combine join documents files">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-lavender">⇄</span>
-                <span class="card-arrow">↗</span>
+        <!-- B. FUNCTIONAL TOOL SEARCH -->
+        <div class="tool-search-box">
+            <div class="search-input-wrap">
+                <span class="search-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                </span>
+                <input
+                    type="search"
+                    id="toolSearch"
+                    placeholder="Search by tool name or action (e.g. merge, word, crop, rotate)..."
+                    autocomplete="off"
+                    aria-label="Search tools"
+                    aria-describedby="searchStatus"
+                >
+                <button type="button" class="search-clear-btn" id="searchClearBtn" aria-label="Clear search" title="Clear search">✕</button>
+                <kbd class="search-shortcut" title="Press Ctrl + K to search">⌘K</kbd>
             </div>
-            <h3>Merge PDF</h3>
-            <p>Combine multiple documents into one PDF.</p>
-            <span class="card-category">PDF MANAGEMENT</span>
-        </a>
-
-        <a href="{% url 'tool_page' 'split-pdf' %}"
-           class="tool-card"
-           data-tool="split pdf extract pages separate">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-blue">⫶</span>
-                <span class="card-arrow">↗</span>
+            <div class="search-status-bar">
+                <span class="search-status" id="searchStatus" aria-live="polite"></span>
             </div>
-            <h3>Split PDF</h3>
-            <p>Extract the pages you actually need.</p>
-            <span class="card-category">PDF MANAGEMENT</span>
-        </a>
+        </div>
+    </header>
 
-        <a href="{% url 'image_to_pdf' %}"
-           class="tool-card"
-           data-tool="image to pdf jpg jpeg png photos pictures">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-green">▣</span>
-                <span class="card-arrow">↗</span>
+    <!-- ==========================================
+         C. CATEGORY SELECTOR TABS
+         ========================================== -->
+    <nav class="category-tabs" role="tablist" aria-label="Filter tools by category">
+        <button type="button" class="category-tab active" data-filter="all" role="tab" aria-selected="true">
+            <span>All Tools</span>
+            <span class="tab-badge">11</span>
+        </button>
+        <button type="button" class="category-tab" data-filter="pdf" role="tab" aria-selected="false">
+            <span>PDF Suite</span>
+            <span class="tab-badge">5</span>
+        </button>
+        <button type="button" class="category-tab" data-filter="conversion" role="tab" aria-selected="false">
+            <span>Conversions</span>
+            <span class="tab-badge">3</span>
+        </button>
+        <button type="button" class="category-tab" data-filter="creative" role="tab" aria-selected="false">
+            <span>Creative Studio</span>
+            <span class="tab-badge">3</span>
+        </button>
+    </nav>
+
+    <!-- ==========================================
+         D. TOOL DISCOVERY SECTIONS
+         ========================================== -->
+
+    <!-- SECTION 1: PDF SUITE -->
+    <section class="tool-section" id="section-pdf" data-category="pdf">
+        <div class="section-header">
+            <div class="section-title-wrap">
+                <span class="section-index">01</span>
+                <h2>PDF Suite</h2>
             </div>
-            <h3>Image to PDF</h3>
-            <p>Turn your images into a single document.</p>
-            <span class="card-category">CONVERSION</span>
-        </a>
+            <span class="section-meta">5 TOOLS</span>
+        </div>
 
-        <a href="{% url 'word_to_pdf' %}"
-           class="tool-card"
-           data-tool="word doc docx to pdf convert document">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-orange">W</span>
-                <span class="card-arrow">↗</span>
-            </div>
-            <h3>Word to PDF</h3>
-            <p>Convert Word documents into PDF files.</p>
-            <span class="card-category">CONVERSION</span>
-        </a>
+        <div class="tool-card-grid">
+            <!-- Merge PDF -->
+            <a href="{% url 'merge_pdf' %}"
+               class="tool-card"
+               data-tool="merge pdf combine join documents files reorder"
+               data-category="pdf">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-emerald">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M18 3v6h-6"/><path d="m12 9 9-9"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">PDF</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">Merge PDF</h3>
+                <p class="tool-desc">Combine multiple PDF documents into a single, structured file.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open tool</span>
+                </div>
+            </a>
 
-        <a href="{% url 'pdf_to_word' %}"
-           class="tool-card"
-           data-tool="pdf to word docx editable convert document">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-pink">W↗</span>
-                <span class="card-arrow">↗</span>
-            </div>
-            <h3>PDF to Word</h3>
-            <p>Turn PDF content into an editable document.</p>
-            <span class="card-category">CONVERSION</span>
-        </a>
+            <!-- Split PDF -->
+            <a href="{% url 'split_pdf' %}"
+               class="tool-card"
+               data-tool="split pdf extract pages separate divide cut burst"
+               data-category="pdf">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-teal">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8"/><path d="M9 17l3 3 3-3"/><path d="M14 8 21 1"/><path d="M10 8 3 1"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">PDF</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">Split PDF</h3>
+                <p class="tool-desc">Extract custom page ranges or separate documents into distinct files.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open tool</span>
+                </div>
+            </a>
 
-        <a href="{% url 'rotate_pdf' %}"
-           class="tool-card"
-           data-tool="rotate pdf turn pages orientation">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-yellow">⟳</span>
-                <span class="card-arrow">↗</span>
-            </div>
-            <h3>Rotate PDF</h3>
-            <p>Correct page orientation in a few steps.</p>
-            <span class="card-category">PDF MANAGEMENT</span>
-        </a>
+            <!-- Rotate PDF -->
+            <a href="{% url 'rotate_pdf' %}"
+               class="tool-card"
+               data-tool="rotate pdf orientation turn pages landscape portrait 90 180"
+               data-category="pdf">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-amber">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">PDF</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">Rotate PDF</h3>
+                <p class="tool-desc">Correct sideways or upside-down pages with clockwise rotation angles.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open tool</span>
+                </div>
+            </a>
 
+            <!-- Compress PDF -->
             <a href="{% url 'compress_pdf' %}"
-            class="tool-card"
-            data-tool="Compress your pdf into smaller size">
-                <div class="tool-card-top">
-                    <span class="tool-icon icon-yellow">⟳</span>
-                    <span class="card-arrow">↗</span>
+               class="tool-card"
+               data-tool="compress pdf reduce file size shrink optimize mb kb"
+               data-category="pdf">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-olive">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m10 14-7 7"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">PDF</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
                 </div>
-                <h3>Compress PDF</h3>
-                <p>Compress PDF in a few steps.</p>
-                <span class="card-category">PDF MANAGEMENT</span>
+                <h3 class="tool-title">Compress PDF</h3>
+                <p class="tool-desc">Reduce document file sizes for quick sharing without sacrificing text clarity.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open tool</span>
+                </div>
             </a>
 
+            <!-- Protect PDF -->
             <a href="{% url 'protect_pdf' %}"
-            class="tool-card"
-            data-tool="Protect your pdf by adding pasword">
-                <div class="tool-card-top">
-                    <span class="tool-icon icon-yellow">⟳</span>
-                    <span class="card-arrow">↗</span>
+               class="tool-card"
+               data-tool="protect pdf password encrypt security lock aes"
+               data-category="pdf">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-slate">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">SECURITY</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
                 </div>
-                <h3>Protect PDF</h3>
-                <p>Protect PDF in a few steps.</p>
-                <span class="card-category">PDF MANAGEMENT</span>
+                <h3 class="tool-title">Protect PDF</h3>
+                <p class="tool-desc">Encrypt confidential documents with standard AES-256 password protection.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open tool</span>
+                </div>
             </a>
-    </div>
-</section>
-
-<section class="tool-section secondary-section" id="other-tools">
-    <div class="section-heading">
-        <div>
-            <div class="section-kicker">02 / EVERYDAY WORK</div>
-            <h2>More ways to create</h2>
-            <p class="section-description">
-                A little space for notes, images, and ideas.
-            </p>
         </div>
-        <span class="section-count">03 TOOLS</span>
+    </section>
+
+    <!-- SECTION 2: CONVERSIONS -->
+    <section class="tool-section" id="section-conversion" data-category="conversion">
+        <div class="section-header">
+            <div class="section-title-wrap">
+                <span class="section-index">02</span>
+                <h2>Conversions</h2>
+            </div>
+            <span class="section-meta">3 TOOLS</span>
+        </div>
+
+        <div class="tool-card-grid">
+            <!-- Image to PDF -->
+            <a href="{% url 'image_to_pdf' %}"
+               class="tool-card"
+               data-tool="image to pdf jpg jpeg png photos pictures scan convert"
+               data-category="conversion">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-emerald">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">CONVERT</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">Image to PDF</h3>
+                <p class="tool-desc">Turn batches of JPG and PNG photos into a single organized PDF document.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open tool</span>
+                </div>
+            </a>
+
+            <!-- Word to PDF -->
+            <a href="{% url 'word_to_pdf' %}"
+               class="tool-card"
+               data-tool="word to pdf doc docx document convert format export"
+               data-category="conversion">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h6"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">CONVERT</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">Word to PDF</h3>
+                <p class="tool-desc">Convert Microsoft Word (.docx) files into universally readable, fixed-layout PDFs.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open tool</span>
+                </div>
+            </a>
+
+            <!-- PDF to Word -->
+            <a href="{% url 'pdf_to_word' %}"
+               class="tool-card"
+               data-tool="pdf to word docx editable document extract text convert"
+               data-category="conversion">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="m2 15 2 5 2-5 2 5 2-5"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">CONVERT</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">PDF to Word</h3>
+                <p class="tool-desc">Extract text, layout, and document structure into an editable Word document.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open tool</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- SECTION 3: CREATIVE STUDIO -->
+    <section class="tool-section" id="section-creative" data-category="creative">
+        <div class="section-header">
+            <div class="section-title-wrap">
+                <span class="section-index">03</span>
+                <h2>Creative Studio</h2>
+            </div>
+            <span class="section-meta">3 TOOLS</span>
+        </div>
+
+        <div class="tool-card-grid">
+            <!-- Quick Notes -->
+            <a href="{% url 'quick_notes' %}"
+               class="tool-card"
+               data-tool="quick notes whiteboard draw sketch diagram notes canvas excalidraw"
+               data-category="creative">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-emerald">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">CANVAS</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">Quick Notes</h3>
+                <p class="tool-desc">Infinite vector whiteboard for freehand sketches, diagrams, arrows, and sticky notes.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open canvas</span>
+                </div>
+            </a>
+
+            <!-- Image Editor -->
+            <a href="{% url 'image_editor' %}"
+               class="tool-card"
+               data-tool="image editor photo crop resize rotate filter contrast text studio"
+               data-category="creative">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-violet">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">STUDIO</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">Image Editor</h3>
+                <p class="tool-desc">In-browser photo studio to crop, resize, rotate, apply adjustments, and add text.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Open studio</span>
+                </div>
+            </a>
+
+            <!-- Collage Maker -->
+            <a href="{% url 'collage_maker' %}"
+               class="tool-card"
+               data-tool="collage maker photo grid arrange multi layout pictures combine"
+               data-category="creative">
+                <div class="tool-card-head">
+                    <div class="tool-icon-frame icon-amber">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 12h18"/><path d="M12 3v18"/>
+                        </svg>
+                    </div>
+                    <span class="tool-meta-tag">LAYOUT</span>
+                    <span class="card-arrow-icon" aria-hidden="true">→</span>
+                </div>
+                <h3 class="tool-title">Collage Maker</h3>
+                <p class="tool-desc">Compose multiple photos into customizable grid collages with aspect ratio and spacing controls.</p>
+                <div class="tool-card-foot">
+                    <span class="tool-action-label">Create collage</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         EMPTY STATE SEARCH NOTICE
+         ========================================== -->
+    <div class="empty-search" id="emptySearch" hidden>
+        <div class="empty-search-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </div>
+        <h3>No matching tools found</h3>
+        <p>No tool matches your query. Try searching for "PDF", "Notes", "Crop", or "Word".</p>
+        <button type="button" class="btn btn-secondary" id="resetSearchBtn">View All Tools</button>
     </div>
 
-    <div class="tool-grid">
-        <a href="{% url 'quick_notes' %}"
-           class="tool-card"
-           data-tool="notes notepad text editor writing">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-green">≡</span>
-                <span class="card-arrow">↗</span>
-            </div>
-            <h3>Quick Notes</h3>
-            <p>Get ideas out of your head and onto the page.</p>
-            <span class="card-category">PRODUCTIVITY</span>
-        </a>
-
-        <a href="{% url 'image_editor' %}"
-           class="tool-card"
-           data-tool="image editor add text photo crop resize">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-lavender">◩</span>
-                <span class="card-arrow">↗</span>
-            </div>
-            <h3>Image Editor</h3>
-            <p>Add text and make quick image adjustments.</p>
-            <span class="card-category">CREATIVE</span>
-        </a>
-
-        <a href="{% url 'collage_maker' %}"
-           class="tool-card"
-           data-tool="collage maker photos grid picture layout">
-            <div class="tool-card-top">
-                <span class="tool-icon icon-orange">▦</span>
-                <span class="card-arrow">↗</span>
-            </div>
-            <h3>Collage Maker</h3>
-            <p>Bring your favorite photos together.</p>
-            <span class="card-category">CREATIVE</span>
-        </a>
+    <!-- ==========================================
+         E. SUBTLE BOTTOM EDITORIAL PRINCIPLE STRIP
+         (Replaces the 4 generic decorative marketing cards)
+         ========================================== -->
+    <div class="studio-principles-strip">
+        <div class="principle-item">
+            <span class="principle-bullet">▪</span>
+            <span class="principle-text"><strong>Instant Execution</strong> — Zero account registration or queues.</span>
+        </div>
+        <div class="principle-item">
+            <span class="principle-bullet">▪</span>
+            <span class="principle-text"><strong>Private Sessions</strong> — Files processed in-memory without server storage.</span>
+        </div>
+        <div class="principle-item">
+            <span class="principle-bullet">▪</span>
+            <span class="principle-text"><strong>Cross-Device</strong> — Designed for desktop precision and mobile utility.</span>
+        </div>
     </div>
-</section>
 
-<div class="empty-search" id="emptySearch" hidden>
-    <span class="empty-search-icon">⌕</span>
-    <h3>No matching tools</h3>
-    <p>Try a different search term.</p>
 </div>
 {% endblock %}

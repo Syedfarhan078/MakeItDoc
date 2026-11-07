@@ -1,403 +1,122 @@
-
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Protect PDF — ToolNest{% endblock %}
+{% block title %}Protect PDF — MakeitDoc{% endblock %}
 {% block breadcrumb %}Protect PDF{% endblock %}
 
 {% block content %}
+<section class="tool-page-wrap">
+    <a href="{% url 'dashboard' %}" class="tool-back-nav">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+        </svg>
+        <span>All tools</span>
+    </a>
 
-<style>
-    .word-tool {
-        max-width: 760px;
-        margin: 20px auto;
-    }
-
-    .word-heading {
-        margin-bottom: 24px;
-    }
-
-    .word-heading h1 {
-        font-size: 28px;
-        margin-bottom: 8px;
-    }
-
-    .word-heading p {
-        color: var(--text-secondary, #999);
-    }
-
-    .word-panel {
-        padding: 28px;
-        border: 1px solid var(--border-color, #333);
-        border-radius: 14px;
-        background: var(--card-bg, #171717);
-    }
-
-    .word-dropzone {
-        display: block;
-        padding: 30px 20px;
-        text-align: center;
-        border: 2px dashed var(--border-color, #444);
-        border-radius: 12px;
-        transition: 0.2s;
-    }
-
-    .word-dropzone.dragover {
-        border-color: var(--primary-color, #8b5cf6);
-        background: rgba(139, 92, 246, 0.06);
-    }
-
-    .word-icon {
-        font-size: 36px;
-        margin-bottom: 12px;
-    }
-
-    .word-file-input {
-        display: block;
-        width: 100%;
-        max-width: 350px;
-        margin: 18px auto 10px;
-        padding: 10px;
-        border: 1px solid var(--border-color, #444);
-        border-radius: 8px;
-        background: var(--input-bg, #111);
-        color: inherit;
-        cursor: pointer;
-    }
-
-    .word-file-name {
-        display: block;
-        margin-top: 12px;
-        color: var(--text-secondary, #aaa);
-        font-size: 14px;
-        overflow-wrap: anywhere;
-    }
-
-    .word-field {
-        margin-top: 22px;
-    }
-
-    .word-field label {
-        display: block;
-        margin-bottom: 9px;
-        font-weight: 600;
-    }
-
-    .word-password-wrap {
-        display: flex;
-        align-items: center;
-        border: 1px solid var(--border-color, #444);
-        border-radius: 8px;
-        overflow: hidden;
-        background: var(--input-bg, #111);
-    }
-
-    .word-password-wrap input {
-        flex: 1;
-        min-width: 0;
-        padding: 13px;
-        border: none;
-        outline: none;
-        background: transparent;
-        color: inherit;
-    }
-
-    .word-toggle {
-        padding: 10px 13px;
-        border: none;
-        background: transparent;
-        color: var(--text-secondary, #aaa);
-        cursor: pointer;
-    }
-
-    .word-error {
-        margin-top: 16px;
-        padding: 12px;
-        border-radius: 8px;
-        color: #ff7777;
-        background: rgba(255, 70, 70, 0.08);
-    }
-
-    .word-submit {
-        width: 100%;
-        margin-top: 25px;
-        padding: 14px;
-        border: none;
-        border-radius: 9px;
-        background: var(--primary-color, #8b5cf6);
-        color: white;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .word-submit:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .word-info {
-        margin-top: 20px;
-        padding: 15px;
-        border-radius: 9px;
-        background: rgba(139, 92, 246, 0.07);
-        color: var(--text-secondary, #aaa);
-        font-size: 13px;
-        line-height: 1.6;
-    }
-</style>
-
-<div class="word-tool">
-
-    <div class="word-heading">
+    <header class="tool-page-header">
+        <span class="tool-kicker">PDF SUITE / PROTECT PDF</span>
         <h1>Protect PDF</h1>
-        <p>Add password protection to your PDF document.</p>
-    </div>
+        <p>Encrypt confidential documents with standard AES-256 password protection.</p>
+    </header>
 
-    <div class="word-panel">
-
+    <div class="tool-main-panel">
         <form method="POST" enctype="multipart/form-data" id="protectForm">
             {% csrf_token %}
 
-            <!-- PDF Upload -->
-            <div class="word-dropzone" id="dropZone">
-
-                <div class="word-icon">🔒</div>
-
-                <strong>Choose a PDF file</strong>
-                <p>Click the button below or drag and drop your PDF here.</p>
+            <label for="pdfFile" class="editorial-dropzone" id="dropZone">
+                <div class="dropzone-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <strong class="dropzone-title">Choose a PDF file or drag it here</strong>
+                <p class="dropzone-hint">Add password encryption to your PDF before sharing</p>
+                <span class="dropzone-meta-badge">PDF FORMAT · AES-256 ENCRYPTION · UP TO 20 MB</span>
 
                 <input
                     type="file"
                     name="document"
                     id="pdfFile"
-                    class="word-file-input"
+                    class="visually-hidden"
                     accept=".pdf,application/pdf"
                     required
                 >
+            </label>
 
-                <span class="word-file-name" id="fileName">
-                    No file selected
-                </span>
-
+            <div class="word-file-name" id="fileName">
+                No file selected
             </div>
 
-            <!-- Password -->
-            <div class="word-field">
-                <label for="password">Set Password</label>
-
-                <div class="word-password-wrap">
+            <!-- Password Fields -->
+            <div class="form-field-group">
+                <label for="password">Set Password (8–40 characters)</label>
+                <div class="password-input-wrap">
                     <input
                         type="password"
                         name="password"
                         id="password"
-                        placeholder="Enter password"
+                        placeholder="Enter encryption password"
                         minlength="8"
                         maxlength="40"
                         autocomplete="new-password"
                         required
                     >
-
-<button type="button" class="word-toggle" data-target="password">
-    Show
-</button>
+                    <button type="button" class="password-toggle-btn word-toggle" data-target="password">
+                        Show
+                    </button>
                 </div>
             </div>
 
-            <!-- Confirm Password -->
-            <div class="word-field">
+            <div class="form-field-group">
                 <label for="confirmPassword">Confirm Password</label>
-
-                <div class="word-password-wrap">
+                <div class="password-input-wrap">
                     <input
                         type="password"
                         name="confirm_password"
                         id="confirmPassword"
-                        placeholder="Re-enter password"
+                        placeholder="Re-enter password to confirm"
                         minlength="8"
                         maxlength="40"
                         autocomplete="new-password"
                         required
                     >
-
-<button type="button" class="word-toggle" data-target="confirmPassword">
-    Show
-</button>
+                    <button type="button" class="password-toggle-btn word-toggle" data-target="confirmPassword">
+                        Show
+                    </button>
                 </div>
             </div>
 
             {% if error %}
-                <div class="word-error">{{ error }}</div>
+                <div class="word-error" style="display: flex;">
+                    <span class="error-symbol">!</span>
+                    <span>{{ error }}</span>
+                </div>
             {% endif %}
 
             <div class="word-error" id="clientError" hidden></div>
 
             <button
                 type="submit"
-                class="word-submit"
+                class="btn btn-primary"
                 id="submitButton"
+                style="width: 100%; margin-top: 24px;"
                 disabled
             >
-                Protect PDF
+                Protect Document →
             </button>
-
         </form>
 
-        <div class="word-info">
-            <strong>Security information</strong>
-            <ul>
-                <li>Your PDF will be protected using AES-256 encryption.</li>
-                <li>Password must contain 8–40 characters.</li>
-                <li>Your password is not stored by ToolNest.</li>
-                <li>Keep your password safe. You will need it to open the PDF.</li>
-                <li>Maximum PDF size: 20 MB.</li>
-            </ul>
+        <div class="tool-info-strip">
+            <p><strong>Security Architecture:</strong></p>
+            <p>• Your document is encrypted with standard AES-256 cipher in memory.</p>
+            <p>• Passwords are never logged or stored by MakeitDoc servers.</p>
+            <p>• Keep your password safe. MakeitDoc cannot recover locked documents without it.</p>
         </div>
-
     </div>
-</div>
-
-
-<script>
-(function () {
-    const fileInput = document.getElementById("pdfFile");
-    const fileName = document.getElementById("fileName");
-    const passwordInput = document.getElementById("password");
-    const confirmInput = document.getElementById("confirmPassword");
-    const submitButton = document.getElementById("submitButton");
-    const clientError = document.getElementById("clientError");
-    const protectForm = document.getElementById("protectForm");
-    const dropZone = document.getElementById("dropZone");
-
-    const MAX_FILE_SIZE = 20 * 1024 * 1024;
-
-    function showError(message) {
-        clientError.textContent = message;
-        clientError.hidden = false;
-    }
-
-    function clearError() {
-        clientError.textContent = "";
-        clientError.hidden = true;
-    }
-
-    // Validate the selected PDF and passwords
-    function validateForm() {
-        clearError();
-
-        const file = fileInput.files[0];
-        const password = passwordInput.value;
-        const confirmPassword = confirmInput.value;
-
-        let valid = true;
-
-        if (!file) {
-            valid = false;
-        } else if (!file.name.toLowerCase().endsWith(".pdf")) {
-            showError("Please select a valid PDF file.");
-            valid = false;
-        } else if (file.size === 0 || file.size > MAX_FILE_SIZE) {
-            showError("PDF must be greater than 0 bytes and no larger than 20 MB.");
-            valid = false;
-        }
-
-        if (password.length < 8 || password.length > 40) {
-            if (password.length > 0) {
-                showError("Password must contain between 8 and 40 characters.");
-            }
-            valid = false;
-        }
-
-        if (!confirmPassword) {
-            valid = false;
-        } else if (password !== confirmPassword) {
-            showError("Passwords do not match.");
-            valid = false;
-        }
-
-        submitButton.disabled = !valid;
-    }
-
-    // Display the selected filename
-    fileInput.addEventListener("change", function () {
-        const file = this.files[0];
-
-        fileName.textContent = file
-            ? file.name + " (" + (file.size / (1024 * 1024)).toFixed(2) + " MB)"
-            : "No file selected";
-
-        validateForm();
-    });
-
-    // Password validation
-    passwordInput.addEventListener("input", validateForm);
-    confirmInput.addEventListener("input", validateForm);
-
-    // Show and hide passwords
-    document.querySelectorAll(".word-toggle").forEach(function (button) {
-        button.addEventListener("click", function () {
-            const target = document.getElementById(this.dataset.target);
-
-            if (target.type === "password") {
-                target.type = "text";
-                this.textContent = "Hide";
-            } else {
-                target.type = "password";
-                this.textContent = "Show";
-            }
-        });
-    });
-
-    // Drag and drop support
-    ["dragenter", "dragover"].forEach(function (eventName) {
-        dropZone.addEventListener(eventName, function (event) {
-            event.preventDefault();
-            dropZone.classList.add("dragover");
-        });
-    });
-
-    ["dragleave", "drop"].forEach(function (eventName) {
-        dropZone.addEventListener(eventName, function (event) {
-            event.preventDefault();
-            dropZone.classList.remove("dragover");
-        });
-    });
-
-    dropZone.addEventListener("drop", function (event) {
-        const file = event.dataTransfer.files[0];
-
-        if (file) {
-            const transfer = new DataTransfer();
-            transfer.items.add(file);
-            fileInput.files = transfer.files;
-
-            fileInput.dispatchEvent(new Event("change", {
-                bubbles: true
-            }));
-        }
-    });
-
-    // Form submission
-    protectForm.addEventListener("submit", function (event) {
-        validateForm();
-
-        if (submitButton.disabled) {
-            event.preventDefault();
-            return;
-        }
-
-        submitButton.textContent = "Protecting PDF...";
-        submitButton.disabled = true;
-    });
-
-    validateForm();
-
-})();
-</script>
-
+</section>
 {% endblock %}
 
-
-
+{% block extra_scripts %}
 <script>
 (function () {
     const fileInput = document.getElementById("pdfFile");
@@ -412,16 +131,17 @@
     const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
     function showError(message) {
-        clientError.textContent = message;
+        clientError.innerHTML = `<span class="error-symbol">!</span><span>${message}</span>`;
         clientError.hidden = false;
+        clientError.style.display = "flex";
     }
 
     function clearError() {
-        clientError.textContent = "";
+        clientError.innerHTML = "";
         clientError.hidden = true;
+        clientError.style.display = "none";
     }
 
-    // Validate the selected PDF and passwords
     function validateForm() {
         clearError();
 
@@ -458,26 +178,20 @@
         submitButton.disabled = !valid;
     }
 
-    // Display the selected filename
     fileInput.addEventListener("change", function () {
         const file = this.files[0];
-
         fileName.textContent = file
             ? file.name + " (" + (file.size / (1024 * 1024)).toFixed(2) + " MB)"
             : "No file selected";
-
         validateForm();
     });
 
-    // Password validation
     passwordInput.addEventListener("input", validateForm);
     confirmInput.addEventListener("input", validateForm);
 
-    // Show and hide passwords
     document.querySelectorAll(".word-toggle").forEach(function (button) {
         button.addEventListener("click", function () {
             const target = document.getElementById(this.dataset.target);
-
             if (target.type === "password") {
                 target.type = "text";
                 this.textContent = "Hide";
@@ -488,50 +202,31 @@
         });
     });
 
-    // Drag and drop support
-    ["dragenter", "dragover"].forEach(function (eventName) {
-        dropZone.addEventListener(eventName, function (event) {
-            event.preventDefault();
-            dropZone.classList.add("dragover");
-        });
+    dropZone.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        this.classList.add("drag-over");
     });
 
-    ["dragleave", "drop"].forEach(function (eventName) {
-        dropZone.addEventListener(eventName, function (event) {
-            event.preventDefault();
-            dropZone.classList.remove("dragover");
-        });
+    dropZone.addEventListener("dragleave", function () {
+        this.classList.remove("drag-over");
     });
 
-    dropZone.addEventListener("drop", function (event) {
-        const file = event.dataTransfer.files[0];
+    dropZone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        this.classList.remove("drag-over");
 
-        if (file) {
-            const transfer = new DataTransfer();
-            transfer.items.add(file);
-            fileInput.files = transfer.files;
-
-            fileInput.dispatchEvent(new Event("change", {
-                bubbles: true
-            }));
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            const file = e.dataTransfer.files[0];
+            fileName.textContent = file.name + " (" + (file.size / (1024 * 1024)).toFixed(2) + " MB)";
+            validateForm();
         }
     });
 
-    // Form submission
-    protectForm.addEventListener("submit", function (event) {
-        validateForm();
-
-        if (submitButton.disabled) {
-            event.preventDefault();
-            return;
-        }
-
-        submitButton.textContent = "Protecting PDF...";
+    protectForm.addEventListener("submit", function () {
         submitButton.disabled = true;
+        submitButton.textContent = "Encrypting document...";
     });
-
-    validateForm();
-
 })();
 </script>
-
+{% endblock %}

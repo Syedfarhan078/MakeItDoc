@@ -602,21 +602,29 @@
 
 <div class="collage-container">
 
+    <a href="{% url 'dashboard' %}" class="tool-back-nav" style="margin-bottom: 8px;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+        </svg>
+        <span>All tools</span>
+    </a>
+
     <!-- Header -->
     <div class="collage-header">
         <div class="collage-header-text">
-            <h1>Collage Maker <span class="collage-badge">Studio</span></h1>
+            <span class="tool-kicker">CREATIVE STUDIO / COLLAGE MAKER</span>
+            <h1 style="font-family: var(--font-heading); font-size: 26px; font-weight: 600;">Collage Maker</h1>
             <p>Combine multiple photos into sleek custom photo collages with customizable layouts and spacing.</p>
         </div>
         <div class="collage-btn-group">
             <button type="button" class="collage-btn" id="clearAllBtn" disabled>
-                ✕ Clear All
+                Clear All
             </button>
             <button type="button" class="collage-btn" id="shuffleBtn" disabled title="Shuffle photo positions">
-                🔀 Shuffle Photos
+                Shuffle Photos
             </button>
             <button type="button" class="collage-btn btn-accent" id="topDownloadBtn" disabled>
-                ↓ Export Collage
+                Export Collage →
             </button>
         </div>
     </div>

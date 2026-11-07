@@ -1,147 +1,274 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0b0d12" id="themeColorMeta">
-    <meta name="description" content="MakeitDoc — your personal productivity toolkit.">
-    <title>{% block title %}MakeitDoc{% endblock %}</title>
+    <meta name="theme-color" content="#F7F8F4" id="themeColorMeta">
+    <meta name="description" content="MakeitDoc — Free browser document utility & creative studio. Merge, split, compress, protect PDFs, convert documents, and sketch with zero file retention.">
+    <title>{% block title %}MakeitDoc — Free Document & Creative Suite{% endblock %}</title>
+
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/favicon.png' %}">
+
+    <!-- Editorial Utility Fonts: Instrument Sans (Headings), DM Sans (Body), IBM Plex Mono (Data/Tags) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <script src="{% static 'js/main.js' %}" defer></script>
-    
 </head>
 <body>
     <div class="app-shell">
-        <aside class="sidebar" id="sidebar">
-            <a href="{% url 'dashboard' %}" class="brand">
-                <span class="brand-mark">
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <rect x="3" y="3" width="8" height="8" rx="2"/>
-                        <rect x="13" y="3" width="8" height="8" rx="2"/>
-                        <rect x="3" y="13" width="8" height="8" rx="2"/>
-                        <rect x="13" y="13" width="8" height="8" rx="2"/>
-                    </svg>
-                </span>
-                <span class="brand-name">MakeitDoc</span>
+
+        <!-- Mobile Drawer Backdrop Overlay -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+
+        <!-- Persistent Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+            <a href="{% url 'dashboard' %}" class="brand" title="MakeitDoc — Overview">
+                <img src="{% static 'images/logo.png' %}" class="brand-logo light-only" alt="MakeitDoc Logo" width="144" height="48">
+                <img src="{% static 'images/logo-dark.png' %}" class="brand-logo dark-only" alt="MakeitDoc Logo" width="144" height="48">
             </a>
 
+            <!-- Category: Workspace -->
             <div class="sidebar-label">WORKSPACE</div>
-
-            <nav class="sidebar-nav" aria-label="Main navigation">
+            <nav class="sidebar-nav" aria-label="Workspace tools">
                 <a href="{% url 'dashboard' %}"
                    class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                    <span class="nav-icon">⌂</span>
-                    <span>Overview</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Overview</span>
                 </a>
-                <a href="{% url 'quick_notes' %}" class="nav-link {% if request.resolver_match.url_name == 'quick_notes' or request.resolver_match.url_name == 'quick_notes_alias' %}active{% endif %}">
-                    <span class="nav-icon">▤</span>
-                    <span>Quick Notes</span>
+                <a href="{% url 'quick_notes' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'quick_notes' or request.resolver_match.url_name == 'quick_notes_alias' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Quick Notes</span>
                 </a>
             </nav>
 
-            <div class="sidebar-label">PDF TOOLS</div>
-
-                <nav class="sidebar-nav" aria-label="PDF tools">
-
-                    <a href="{% url 'merge_pdf' %}" class="nav-link">
-                        <span class="nav-icon">▧</span>
-                        <span>Merge PDF</span>
-                    </a>
-
-                    <a href="{% url 'split_pdf' %}" class="nav-link">
-                        <span class="nav-icon">⫶</span>
-                        <span>Split PDF</span>
-                    </a>
-
-                    <a href="{% url 'image_to_pdf' %}" class="nav-link">
-                        <span class="nav-icon">▣</span>
-                        <span>Image to PDF</span>
-                    </a>
-
-                    <a href="{% url 'word_to_pdf' %}" class="nav-link">
-                        <span class="nav-icon">⇩</span>
-                        <span>Word to PDF</span>
-                    </a>
-
-                    <a href="{% url 'pdf_to_word' %}" class="nav-link">
-                        <span class="nav-icon">⇧</span>
-                        <span>PDF to Word</span>
-                    </a>
-
+            <!-- Category: PDF Suite -->
+            <div class="sidebar-label">PDF SUITE</div>
+            <nav class="sidebar-nav" aria-label="PDF tools">
+                <a href="{% url 'merge_pdf' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'merge_pdf' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M18 3v6h-6"/><path d="m12 9 9-9"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Merge PDF</span>
+                </a>
+                <a href="{% url 'split_pdf' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'split_pdf' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8"/><path d="M9 17l3 3 3-3"/><path d="M14 8 21 1"/><path d="M10 8 3 1"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Split PDF</span>
+                </a>
+                <a href="{% url 'rotate_pdf' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'rotate_pdf' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Rotate PDF</span>
+                </a>
+                <a href="{% url 'compress_pdf' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'compress_pdf' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m10 14-7 7"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Compress PDF</span>
+                </a>
+                <a href="{% url 'protect_pdf' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'protect_pdf' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Protect PDF</span>
+                </a>
             </nav>
 
+            <!-- Category: Conversions -->
+            <div class="sidebar-label">CONVERSIONS</div>
+            <nav class="sidebar-nav" aria-label="Conversion tools">
+                <a href="{% url 'image_to_pdf' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'image_to_pdf' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Image to PDF</span>
+                </a>
+                <a href="{% url 'word_to_pdf' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'word_to_pdf' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h6"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Word to PDF</span>
+                </a>
+                <a href="{% url 'pdf_to_word' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'pdf_to_word' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="m2 15 2 5 2-5 2 5 2-5"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">PDF to Word</span>
+                </a>
+            </nav>
+
+            <!-- Category: Creative Studio -->
             <div class="sidebar-label">CREATIVE STUDIO</div>
-
             <nav class="sidebar-nav" aria-label="Creative tools">
-                <a href="{% url 'image_editor' %}" class="nav-link {% if request.resolver_match.url_name == 'image_editor' %}active{% endif %}">
-                    <span class="nav-icon">▨</span>
-                    <span>Image Editor</span>
+                <a href="{% url 'image_editor' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'image_editor' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Image Editor</span>
                 </a>
-                <a href="{% url 'collage_maker' %}" class="nav-link {% if request.resolver_match.url_name == 'collage_maker' %}active{% endif %}">
-                    <span class="nav-icon">▦</span>
-                    <span>Collage Maker</span>
+                <a href="{% url 'collage_maker' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'collage_maker' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 12h18"/><path d="M12 3v18"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Collage Maker</span>
                 </a>
             </nav>
 
+            <!-- Sidebar Bottom Info -->
             <div class="sidebar-bottom">
                 <div class="privacy-note">
-                    <span class="privacy-dot"></span>
-                    <div>
-                        <strong>Your workspace</strong>
-                        <p>Simple tools. Less clutter.</p>
+                    <img src="{% static 'images/logo-mascot.png' %}" class="privacy-mascot light-only" alt="" width="22" height="22">
+                    <img src="{% static 'images/logo-mascot-dark.png' %}" class="privacy-mascot dark-only" alt="" width="22" height="22">
+                    <div class="privacy-info">
+                        <strong>Private Studio</strong>
+                        <p>No login needed · In-memory processing</p>
                     </div>
                 </div>
-                <div class="sidebar-version">MakeitDoc · PERSONAL EDITION</div>
+                <div class="sidebar-version">MAKEITDOC · STUDIO UTILITIES</div>
             </div>
         </aside>
 
+        <!-- Main Content Area -->
         <div class="main-area">
             <header class="topbar">
-                <button class="icon-button menu-toggle"
-                        id="menuToggle"
-                        type="button"
-                        aria-label="Toggle navigation"
-                        aria-controls="sidebar"
-                        aria-expanded="false">
-                    <span>☰</span>
-                </button>
+                <div class="topbar-left">
+                    <button class="menu-toggle"
+                            id="menuToggle"
+                            type="button"
+                            aria-label="Toggle navigation drawer"
+                            aria-controls="sidebar"
+                            aria-expanded="false">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
+                        </svg>
+                    </button>
 
-                <div class="breadcrumb">
-                    <span>MakeitDoc</span>
-                    <span class="breadcrumb-divider">/</span>
-                    <span class="breadcrumb-current">
-                        {% block breadcrumb %}Overview{% endblock %}
-                    </span>
+                    <!-- Mobile Brand Indicator -->
+                    <a href="{% url 'dashboard' %}" class="mobile-brand" title="MakeitDoc Home">
+                        <img src="{% static 'images/logo-mascot.png' %}" class="mobile-mascot light-only" alt="MakeitDoc" width="22" height="22">
+                        <img src="{% static 'images/logo-mascot-dark.png' %}" class="mobile-mascot dark-only" alt="MakeitDoc" width="22" height="22">
+                        <span class="mobile-brand-name">MakeitDoc</span>
+                    </a>
+
+                    <!-- Desktop Breadcrumb -->
+                    <nav class="breadcrumb" aria-label="Breadcrumb navigation">
+                        <a href="{% url 'dashboard' %}" class="breadcrumb-root">MakeitDoc</a>
+                        <span class="breadcrumb-divider">/</span>
+                        <span class="breadcrumb-current">
+                            {% block breadcrumb %}Overview{% endblock %}
+                        </span>
+                    </nav>
                 </div>
 
                 <div class="topbar-right">
+                    <!-- Quick Notes Fast Shortcut -->
+                    <a href="{% url 'quick_notes' %}" class="topbar-link" title="Open Quick Notes Whiteboard">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+                        </svg>
+                        <span>Quick Notes</span>
+                    </a>
 
-    <button
-        class="theme-toggle"
-        id="themeToggle"
-        type="button"
-        aria-label="Switch to light mode"
-        title="Switch theme"
-    >
-        <span class="theme-toggle-icon" id="themeIcon">☀</span>
-        <span class="theme-toggle-label" id="themeLabel">Light mode</span>
-    </button>
-
-    <div class="avatar" aria-label="Personal workspace">T</div>
-
-</div>
+                    <!-- Clean Theme Toggle (Light / Dark) -->
+                    <button
+                        class="theme-toggle"
+                        id="themeToggle"
+                        type="button"
+                        aria-label="Toggle dark/light theme"
+                        title="Toggle color theme"
+                    >
+                        <!-- Sun Icon (shown in dark mode) -->
+                        <svg class="theme-icon dark-only" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+                        </svg>
+                        <!-- Moon Icon (shown in light mode) -->
+                        <svg class="theme-icon light-only" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                        </svg>
+                        <span class="theme-toggle-label" id="themeLabel">Theme</span>
+                    </button>
+                </div>
             </header>
 
-            <main class="page-content">
+            <main class="page-content" id="mainContent">
                 {% block content %}{% endblock %}
             </main>
 
             <footer class="site-footer">
-                <span>MakeitDoc</span>
-                <span>Built for your everyday workflow.</span>
+                <div class="footer-left">
+                    <span class="footer-brand">MakeitDoc</span>
+                    <span class="footer-sep">·</span>
+                    <span class="footer-desc">Free browser document & creative utility studio.</span>
+                </div>
+                <div class="footer-right">
+                    <span class="footer-meta">Client-First · No Accounts · In-Memory Processing</span>
+                </div>
             </footer>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         REFINED EDITORIAL PROCESSING OVERLAY
+         ========================================== -->
+    <div class="loading-overlay" id="globalLoadingOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="loading-modal">
+            <div class="loading-spinner-wrap">
+                <svg class="loading-spinner" viewBox="0 0 44 44" width="44" height="44">
+                    <circle class="spinner-track" cx="22" cy="22" r="18" fill="none" stroke-width="3"/>
+                    <circle class="spinner-head" cx="22" cy="22" r="18" fill="none" stroke-width="3"/>
+                </svg>
+            </div>
+            <h3 class="loading-title" id="loadingTitle">Processing Document...</h3>
+            <p class="loading-subtitle" id="loadingSubtitle">Please wait while MakeitDoc securely processes your file.</p>
+            <div class="loading-tag">
+                <span>SECURE IN-MEMORY SESSION</span>
+            </div>
         </div>
     </div>
 

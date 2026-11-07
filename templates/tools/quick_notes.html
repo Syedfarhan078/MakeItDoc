@@ -583,27 +583,37 @@
     }
 </style>
 
+<a href="{% url 'dashboard' %}" class="tool-back-nav" style="margin-bottom: 10px;">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+    </svg>
+    <span>All tools</span>
+</a>
+
 <div class="notes-container">
 
     <!-- Header Actions -->
     <div class="notes-header-bar">
         <div class="notes-board-title-wrap">
             <button type="button" class="notes-btn" id="boardsMenuBtn" title="Switch or create note boards">
-                📁 Boards ▾
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;">
+                    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+                </svg>
+                <span>Boards ▾</span>
             </button>
             <input type="text" class="notes-board-title-input" id="boardTitleInput" value="Quick Notes" title="Click to rename board">
-            <span class="notes-badge">Excalidraw</span>
+            <span class="tool-meta-tag" style="padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-secondary);">CANVAS</span>
         </div>
 
         <div class="notes-header-actions">
-            <button type="button" class="notes-btn" id="undoBtn" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
-            <button type="button" class="notes-btn" id="redoBtn" disabled title="Redo (Ctrl+Y)">↷ Redo</button>
-            <button type="button" class="notes-btn" id="clearBtn" title="Clear entire whiteboard">🗑 Clear</button>
+            <button type="button" class="notes-btn" id="undoBtn" disabled title="Undo (Ctrl+Z)">Undo</button>
+            <button type="button" class="notes-btn" id="redoBtn" disabled title="Redo (Ctrl+Y)">Redo</button>
+            <button type="button" class="notes-btn" id="clearBtn" title="Clear entire whiteboard">Clear</button>
             <button type="button" class="notes-btn" id="exportModalOpenBtn" title="Export or share this whiteboard">
-                ↓ Export
+                Export
             </button>
             <button type="button" class="notes-btn btn-accent" id="quickCopyBtn" title="Copy drawing as image">
-                📋 Copy
+                Copy Image
             </button>
         </div>
     </div>

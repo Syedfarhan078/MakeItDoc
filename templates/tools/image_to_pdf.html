@@ -1,27 +1,23 @@
-
 {% extends "base.html" %}
-
 {% load static %}
 
 {% block title %}Image to PDF — MakeitDoc{% endblock %}
 {% block breadcrumb %}Image to PDF{% endblock %}
 
 {% block content %}
-<section class="image-pdf-page">
-    <a href="{% url 'dashboard' %}" class="back-link">
-        &larr; Back to overview
+<section class="tool-page-wrap">
+    <a href="{% url 'dashboard' %}" class="tool-back-nav">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+        </svg>
+        <span>All tools</span>
     </a>
 
-    <div class="eyebrow">
-        <span class="eyebrow-line"></span>
-        DOCUMENT CONVERSION
-    </div>
-
-    <h1>Images to <span class="heading-muted">PDF.</span></h1>
-    <p class="image-pdf-intro">
-        Turn your photos into one document. Add your images,
-        arrange the pages, and download your PDF.
-    </p>
+    <header class="tool-page-header">
+        <span class="tool-kicker">CONVERSIONS / IMAGE TO PDF</span>
+        <h1>Image to PDF</h1>
+        <p>Combine JPEG and PNG photos into a single, organized PDF document.</p>
+    </header>
 
     {% if error %}
         <div class="upload-error" role="alert">
@@ -38,15 +34,16 @@
     >
         {% csrf_token %}
 
-        <div class="upload-panel">
-            <label class="upload-zone" id="uploadZone" for="imageInput">
-                <span class="upload-symbol" aria-hidden="true">↑</span>
-                <strong>Drop your images here</strong>
-                <span class="upload-zone-description">
-                    or click to browse files from your device
+        <div class="tool-main-panel">
+            <label class="editorial-dropzone" id="uploadZone" for="imageInput">
+                <span class="dropzone-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
+                    </svg>
                 </span>
-                <span class="upload-formats">JPG · JPEG · PNG</span>
-                <span class="upload-limit">Up to 20 images · 10 MB each</span>
+                <strong class="dropzone-title">Drop images here or browse files</strong>
+                <span class="dropzone-hint">Select JPEG or PNG images from your computer</span>
+                <span class="dropzone-meta-badge">JPG · PNG · UP TO 20 IMAGES · 10 MB EACH</span>
             </label>
 
             <input
@@ -60,91 +57,87 @@
             >
         </div>
 
+        <!-- PDF Settings -->
         <div class="pdf-settings">
-    <div class="pdf-settings-heading">
-        <h2>PDF settings</h2>
-        <p>Customize how your images appear on each PDF page.</p>
-    </div>
+            <div class="pdf-settings-heading">
+                <h2>Page Layout Settings</h2>
+                <p>Customize page dimensions, margins, and image fitting.</p>
+            </div>
 
-    <div class="pdf-settings-grid">
+            <div class="pdf-settings-grid">
+                <div class="setting-field">
+                    <label for="pageSize">Page Size</label>
+                    <select name="page_size" id="pageSize">
+                        <option value="a4" selected>A4 Document</option>
+                        <option value="original">Original Image Size</option>
+                    </select>
+                </div>
 
-        <div class="setting-field">
-            <label for="pageSize">Page size</label>
-            <select name="page_size" id="pageSize">
-                <option value="a4" selected>A4</option>
-                <option value="original">Original image size</option>
-            </select>
+                <div class="setting-field">
+                    <label for="orientation">Orientation</label>
+                    <select name="orientation" id="orientation">
+                        <option value="portrait" selected>Portrait</option>
+                        <option value="landscape">Landscape</option>
+                    </select>
+                </div>
+
+                <div class="setting-field">
+                    <label for="fitMode">Image Fitting</label>
+                    <select name="fit_mode" id="fitMode">
+                        <option value="fit" selected>Fit to page</option>
+                        <option value="fill">Fill page</option>
+                        <option value="original">Original scale</option>
+                    </select>
+                </div>
+
+                <div class="setting-field">
+                    <label for="margin">Margins</label>
+                    <select name="margin" id="margin">
+                        <option value="none">None (0mm)</option>
+                        <option value="small" selected>Small (5mm)</option>
+                        <option value="large">Large (12mm)</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <div class="setting-field">
-            <label for="orientation">Orientation</label>
-            <select name="orientation" id="orientation">
-                <option value="portrait" selected>Portrait</option>
-                <option value="landscape">Landscape</option>
-            </select>
-        </div>
-
-        <div class="setting-field">
-            <label for="fitMode">Image fitting</label>
-            <select name="fit_mode" id="fitMode">
-                <option value="fit" selected>Fit to page</option>
-                <option value="fill">Fill page</option>
-                <option value="original">Original size</option>
-            </select>
-        </div>
-
-        <div class="setting-field">
-            <label for="margin">Margins</label>
-            <select name="margin" id="margin">
-                <option value="none">None</option>
-                <option value="small" selected>Small</option>
-                <option value="large">Large</option>
-            </select>
-        </div>
-
-    </div>
-</div>
-
+        <!-- Selected Images Preview List -->
         <div class="image-list-section">
             <div class="image-list-heading">
                 <div>
-                    <h2>Your images</h2>
-                    <p>Arrange your images in the order you want in the PDF.</p>
+                    <h2>Selected Images</h2>
                 </div>
-                <span class="image-count" id="imageCount">0 images</span>
+                <span class="image-count" id="imageCount">0 images selected</span>
             </div>
 
             <div id="imageGrid" class="image-preview-grid"></div>
 
             <div id="emptyImages" class="empty-images">
-                <span aria-hidden="true">▧</span>
-                <p>Your selected images will appear here.</p>
+                <p>Selected images will appear here for ordering and preview.</p>
             </div>
         </div>
 
         <div class="conversion-footer">
             <div class="conversion-info">
                 <span class="privacy-indicator"></span>
-                <span>Uploaded temporarily for conversion</span>
+                <span>In-memory conversion session</span>
             </div>
 
             <button
                 type="submit"
                 id="convertButton"
-                class="convert-button"
+                class="btn btn-primary"
                 disabled
             >
                 <span id="convertButtonText">Convert to PDF</span>
-                <span aria-hidden="true">↗</span>
+                <span aria-hidden="true">→</span>
             </button>
         </div>
 
-        <p class="conversion-status" id="conversionStatus" role="status"
-           aria-live="polite"></p>
+        <p class="conversion-status" id="conversionStatus" role="status" aria-live="polite"></p>
     </form>
 </section>
 {% endblock %}
-
 
 {% block extra_scripts %}
 <script src="{% static 'js/image_to_pdf.js' %}" defer></script>

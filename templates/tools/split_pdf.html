@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% load static %}
 
@@ -6,245 +5,51 @@
 {% block breadcrumb %}Split PDF{% endblock %}
 
 {% block content %}
+<section class="tool-page-wrap">
+    <a href="{% url 'dashboard' %}" class="tool-back-nav">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+        </svg>
+        <span>All tools</span>
+    </a>
 
-<style>
-    .word-tool {
-        max-width: 760px;
-        margin: 20px auto;
-    }
-
-    .word-heading {
-        margin-bottom: 25px;
-    }
-
-    .word-heading h1 {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-
-    .word-heading p {
-        color: var(--text-muted);
-        font-size: 14px;
-    }
-
-    .word-panel {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 28px;
-    }
-
-    .word-dropzone {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 190px;
-        border: 1.5px dashed var(--border);
-        border-radius: 12px;
-        cursor: pointer;
-        text-align: center;
-        padding: 25px;
-        transition: 0.2s;
-    }
-
-    .word-dropzone:hover,
-    .word-dropzone.drag-over {
-        border-color: var(--accent);
-        background: var(--surface-hover);
-    }
-
-    .word-icon {
-        font-size: 34px;
-        margin-bottom: 12px;
-    }
-
-    .word-dropzone strong {
-        font-size: 15px;
-        margin-bottom: 6px;
-    }
-
-    .word-dropzone span {
-        color: var(--text-muted);
-        font-size: 13px;
-    }
-
-    .word-file-input {
-        display: none;
-    }
-
-    .word-file-name {
-        margin-top: 15px;
-        font-size: 13px;
-        color: var(--text-muted);
-        text-align: center;
-    }
-
-    .split-options {
-        margin-top: 25px;
-    }
-
-    .split-options h3 {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 13px;
-    }
-
-    .split-option {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 15px;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        margin-bottom: 10px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .split-option:hover {
-        border-color: var(--accent);
-    }
-
-    .split-option input {
-        margin-top: 4px;
-        accent-color: var(--accent);
-    }
-
-    .split-option strong {
-        display: block;
-        font-size: 14px;
-        margin-bottom: 4px;
-    }
-
-    .split-option small {
-        color: var(--text-muted);
-        font-size: 12px;
-    }
-
-    .split-range {
-        margin-top: 15px;
-        display: none;
-    }
-
-    .split-range label {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-
-    .split-range input {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: var(--background);
-        color: var(--text);
-        outline: none;
-        font-size: 14px;
-    }
-
-    .split-range input:focus {
-        border-color: var(--accent);
-    }
-
-    .split-range small {
-        display: block;
-        margin-top: 7px;
-        color: var(--text-muted);
-        font-size: 12px;
-    }
-
-    .word-error {
-        display: none;
-        margin-top: 15px;
-        padding: 12px 14px;
-        border-radius: 8px;
-        background: rgba(239, 68, 68, 0.10);
-        color: #ef4444;
-        font-size: 13px;
-    }
-
-    .word-submit {
-        width: 100%;
-        margin-top: 22px;
-        padding: 13px;
-        border: none;
-        border-radius: 9px;
-        background: var(--accent);
-        color: white;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .word-submit:hover:not(:disabled) {
-        opacity: 0.9;
-    }
-
-    .word-submit:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .word-info {
-        margin-top: 18px;
-        padding: 14px;
-        border-radius: 9px;
-        background: var(--surface-hover);
-        color: var(--text-muted);
-        font-size: 12px;
-        line-height: 1.7;
-    }
-
-    @media (max-width: 600px) {
-        .word-panel {
-            padding: 18px;
-        }
-
-        .word-heading h1 {
-            font-size: 24px;
-        }
-    }
-</style>
-
-<div class="word-tool">
-
-    <div class="word-heading">
+    <header class="tool-page-header">
+        <span class="tool-kicker">PDF SUITE / SPLIT PDF</span>
         <h1>Split PDF</h1>
-        <p>Extract specific pages or split your PDF into individual files.</p>
-    </div>
+        <p>Extract specific page ranges or split entire documents into individual PDF files.</p>
+    </header>
 
-    <div class="word-panel">
-
+    <div class="tool-main-panel">
         <form method="POST" enctype="multipart/form-data" id="splitForm">
             {% csrf_token %}
 
-            <label for="pdfFile" class="word-dropzone" id="dropzone">
-                <div class="word-icon">📄</div>
-                <strong>Choose a PDF file or drag it here</strong>
-                <span>PDF files only · Maximum size 20 MB</span>
-            </label>
+            <label for="pdfFile" class="editorial-dropzone" id="dropzone">
+                <div class="dropzone-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8"/><path d="M9 17l3 3 3-3"/><path d="M14 8 21 1"/><path d="M10 8 3 1"/>
+                    </svg>
+                </div>
+                <strong class="dropzone-title">Choose a PDF file or drag it here</strong>
+                <p class="dropzone-hint">Extract pages into separate documents or a ZIP archive</p>
+                <span class="dropzone-meta-badge">PDF FORMAT · MAXIMUM 20 MB</span>
 
-            <input
-                type="file"
-                name="document"
-                id="pdfFile"
-                class="word-file-input"
-                accept=".pdf,application/pdf"
-                required
-            >
+                <input
+                    type="file"
+                    name="document"
+                    id="pdfFile"
+                    class="visually-hidden"
+                    accept=".pdf,application/pdf"
+                    required
+                >
+            </label>
 
             <div class="word-file-name" id="fileName">
                 No file selected
             </div>
 
+            <!-- Splitting Mode Options -->
             <div class="split-options">
-
-                <h3>Choose splitting option</h3>
+                <h3>Select splitting method</h3>
 
                 <label class="split-option">
                     <input
@@ -253,14 +58,12 @@
                         value="individual"
                         checked
                     >
-
-                    <span>
-                        <strong>Split every page</strong>
-                        <small>
-                            Extract each page into a separate PDF file.
-                            Download all files together as a ZIP.
-                        </small>
-                    </span>
+                    <div>
+                        <strong>Split all pages into individual files</strong>
+                        <p style="margin: 2px 0 0; color: var(--secondary-text); font-size: 12px;">
+                            Extracts each page into its own PDF and downloads them packaged in a ZIP archive.
+                        </p>
+                    </div>
                 </label>
 
                 <label class="split-option">
@@ -269,145 +72,152 @@
                         name="split_mode"
                         value="custom"
                     >
-
-                    <span>
+                    <div>
                         <strong>Extract custom page range</strong>
-                        <small>
-                            Extract a continuous range of pages into one PDF.
-                        </small>
-                    </span>
+                        <p style="margin: 2px 0 0; color: var(--secondary-text); font-size: 12px;">
+                            Extract a continuous sequence of pages into a single new PDF document.
+                        </p>
+                    </div>
                 </label>
 
-                <div class="split-range" id="rangeContainer">
-                    <label for="pageRange">Page range</label>
-
+                <div class="form-field-group" id="rangeContainer" style="display: none;">
+                    <label for="pageRange">Page range (e.g. 2-5)</label>
                     <input
                         type="text"
                         name="page_range"
                         id="pageRange"
                         placeholder="Example: 2-5"
-                        pattern="[0-9]+-[0-9]+"
+                        style="width: 100%; min-height: 40px; padding: 0 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--radius-btn);"
                     >
-
-                    <small>
-                        Enter the starting and ending page numbers.
-                        Example: 2-5 extracts pages 2, 3, 4 and 5.
-                    </small>
+                    <span style="display: block; margin-top: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--muted-text);">
+                        Enter starting and ending page numbers. Example: 2-5 extracts pages 2, 3, 4 and 5.
+                    </span>
                 </div>
-
             </div>
 
             {% if error %}
-                <div class="word-error" style="display:block;">
-                    {{ error }}
+                <div class="word-error" style="display: flex;">
+                    <span class="error-symbol">!</span>
+                    <span>{{ error }}</span>
                 </div>
             {% endif %}
 
-            <div class="word-error" id="clientError"></div>
+            <div class="word-error" id="clientError" style="display: none;"></div>
 
             <button
                 type="submit"
-                class="word-submit"
-                id="splitButton"
+                class="btn btn-primary"
+                id="submitBtn"
+                style="width: 100%; margin-top: 22px;"
                 disabled
             >
-                Split PDF
+                Split Document →
             </button>
-
         </form>
 
-        <div class="word-info">
-            <strong>File requirements</strong><br>
-            • PDF format only<br>
-            • Maximum file size: 20 MB<br>
-            • Maximum pages: 100<br>
-            • Individual splitting supports up to 100 output files<br>
-            • Password-protected PDFs are not supported
+        <div class="tool-info-strip">
+            <p>• Fast client-first processing with zero permanent storage.</p>
+            <p>• Split files are generated in-memory and download immediately upon completion.</p>
         </div>
-
     </div>
-
-</div>
-
-{% endblock %}
-
-{% block extra_scripts %}
+</section>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
     const fileInput = document.getElementById("pdfFile");
     const dropzone = document.getElementById("dropzone");
     const fileName = document.getElementById("fileName");
-    const splitButton = document.getElementById("splitButton");
     const splitForm = document.getElementById("splitForm");
+    const submitBtn = document.getElementById("submitBtn");
     const clientError = document.getElementById("clientError");
     const rangeContainer = document.getElementById("rangeContainer");
     const pageRange = document.getElementById("pageRange");
+    const splitModes = document.getElementsByName("split_mode");
 
     const MAX_FILE_SIZE = 20 * 1024 * 1024;
+    let selectedFile = null;
+
+    function formatBytes(bytes) {
+        if (bytes < 1024 * 1024) {
+            return (bytes / 1024).toFixed(1) + " KB";
+        }
+        return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
 
     function showError(message) {
-        clientError.textContent = message;
-        clientError.style.display = "block";
+        clientError.innerHTML = `<span class="error-symbol">!</span><span>${message}</span>`;
+        clientError.style.display = "flex";
     }
 
     function clearError() {
-        clientError.textContent = "";
+        clientError.innerHTML = "";
         clientError.style.display = "none";
     }
 
-    function validateFile(file) {
+    function updateSubmitState() {
+        if (!selectedFile) {
+            submitBtn.disabled = true;
+            return;
+        }
 
+        const selectedMode = document.querySelector('input[name="split_mode"]:checked').value;
+
+        if (selectedMode === "custom") {
+            const rangeValue = pageRange.value.trim();
+            const rangePattern = /^[0-9]+-[0-9]+$/;
+            submitBtn.disabled = !rangePattern.test(rangeValue);
+        } else {
+            submitBtn.disabled = false;
+        }
+    }
+
+    function handleFile(file) {
         clearError();
 
         if (!file) {
-            return false;
+            selectedFile = null;
+            fileName.textContent = "No file selected";
+            updateSubmitState();
+            return;
         }
 
         if (!file.name.toLowerCase().endsWith(".pdf")) {
-            showError("Please select a PDF file.");
-            return false;
+            showError("Only PDF files are supported.");
+            fileInput.value = "";
+            selectedFile = null;
+            fileName.textContent = "No file selected";
+            updateSubmitState();
+            return;
         }
 
         if (file.size === 0) {
-            showError("The selected file is empty.");
-            return false;
+            showError("The selected PDF file is empty.");
+            fileInput.value = "";
+            selectedFile = null;
+            fileName.textContent = "No file selected";
+            updateSubmitState();
+            return;
         }
 
         if (file.size > MAX_FILE_SIZE) {
-            showError("The PDF file must be 20 MB or smaller.");
-            return false;
-        }
-
-        return true;
-    }
-
-    function updateFile() {
-
-        const file = fileInput.files[0];
-
-        if (!file) {
-            fileName.textContent = "No file selected";
-            splitButton.disabled = true;
-            return;
-        }
-
-        if (!validateFile(file)) {
+            showError("The PDF file exceeds the 20 MB size limit.");
             fileInput.value = "";
+            selectedFile = null;
             fileName.textContent = "No file selected";
-            splitButton.disabled = true;
+            updateSubmitState();
             return;
         }
 
-        const size = (file.size / (1024 * 1024)).toFixed(2);
-
-        fileName.textContent = `${file.name} · ${size} MB`;
-
-        splitButton.disabled = false;
+        selectedFile = file;
+        fileName.textContent = `${file.name} (${formatBytes(file.size)})`;
+        updateSubmitState();
     }
 
-    fileInput.addEventListener("change", updateFile);
+    fileInput.addEventListener("change", function () {
+        if (this.files && this.files.length > 0) {
+            handleFile(this.files[0]);
+        }
+    });
 
     dropzone.addEventListener("dragover", function (event) {
         event.preventDefault();
@@ -422,75 +232,72 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         dropzone.classList.remove("drag-over");
 
-        const files = event.dataTransfer.files;
-
-        if (!files.length) return;
-
-        const transfer = new DataTransfer();
-        transfer.items.add(files[0]);
-
-        fileInput.files = transfer.files;
-
-        updateFile();
+        if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+            fileInput.files = event.dataTransfer.files;
+            handleFile(event.dataTransfer.files[0]);
+        }
     });
 
-    document.querySelectorAll('input[name="split_mode"]').forEach(function (radio) {
-
+    splitModes.forEach(function (radio) {
         radio.addEventListener("change", function () {
-
-            if (this.value === "custom" && this.checked) {
+            if (this.value === "custom") {
                 rangeContainer.style.display = "block";
                 pageRange.required = true;
-            } else if (this.checked) {
+            } else {
                 rangeContainer.style.display = "none";
                 pageRange.required = false;
-                pageRange.value = "";
+                clearError();
             }
-
+            updateSubmitState();
         });
+    });
 
+    pageRange.addEventListener("input", function () {
+        clearError();
+        updateSubmitState();
     });
 
     splitForm.addEventListener("submit", function (event) {
-
         clearError();
 
-        const file = fileInput.files[0];
-
-        if (!validateFile(file)) {
+        if (!selectedFile) {
             event.preventDefault();
+            showError("Please select a PDF file.");
             return;
         }
 
-        const selectedMode = document.querySelector(
-            'input[name="split_mode"]:checked'
-        ).value;
+        const selectedMode = document.querySelector('input[name="split_mode"]:checked').value;
 
         if (selectedMode === "custom") {
+            const rangeValue = pageRange.value.trim();
+            const rangePattern = /^([0-9]+)-([0-9]+)$/;
+            const match = rangeValue.match(rangePattern);
 
-            const range = pageRange.value.trim();
-
-            if (!/^\d+-\d+$/.test(range)) {
+            if (!match) {
                 event.preventDefault();
-                showError("Enter a valid page range, such as 2-5.");
+                showError("Please enter a valid page range in the format: start-end (e.g. 2-5).");
                 return;
             }
 
-            const [start, end] = range.split("-").map(Number);
+            const start = parseInt(match[1], 10);
+            const end = parseInt(match[2], 10);
 
-            if (start < 1 || end < start) {
+            if (start <= 0 || end <= 0) {
                 event.preventDefault();
-                showError("Please enter a valid page range.");
+                showError("Page numbers must be greater than zero.");
+                return;
+            }
+
+            if (start > end) {
+                event.preventDefault();
+                showError("The starting page number cannot be greater than the ending page number.");
                 return;
             }
         }
 
-        splitButton.disabled = true;
-        splitButton.textContent = "Processing PDF...";
-
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Splitting document...";
     });
-
 });
 </script>
-
 {% endblock %}

@@ -5,136 +5,25 @@
 {% block breadcrumb %}Word to PDF{% endblock %}
 
 {% block content %}
+<section class="tool-page-wrap">
+    <a href="{% url 'dashboard' %}" class="tool-back-nav">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+        </svg>
+        <span>All tools</span>
+    </a>
 
-<style>
-    .word-tool {
-        max-width: 760px;
-        margin: 20px auto;
-    }
-
-    .word-heading {
-        margin-bottom: 28px;
-    }
-
-    .word-heading h1 {
-        font-size: 30px;
-        margin-bottom: 10px;
-    }
-
-    .word-heading p {
-        color: var(--text-muted, #9298a5);
-        line-height: 1.7;
-    }
-
-    .word-panel {
-        padding: 30px;
-        border: 1px solid var(--border, #292d38);
-        border-radius: 16px;
-        background: var(--surface, #141720);
-    }
-
-    .word-dropzone {
-        display: block;
-        padding: 45px 20px;
-        text-align: center;
-        border: 1px dashed #555d70;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: 0.2s ease;
-    }
-
-    .word-dropzone:hover {
-        border-color: #8b91ff;
-        background: rgba(139, 145, 255, 0.05);
-    }
-
-    .word-icon {
-        font-size: 38px;
-        margin-bottom: 14px;
-    }
-
-    .word-dropzone strong {
-        display: block;
-        margin-bottom: 8px;
-    }
-
-    .word-dropzone p {
-        color: var(--text-muted, #9298a5);
-        font-size: 13px;
-    }
-
-    .word-file-input {
-        display: none;
-    }
-
-    .word-file-name {
-        margin-top: 16px;
-        font-size: 14px;
-        color: #a5aaff;
-        overflow-wrap: anywhere;
-    }
-
-    .word-error {
-        margin-bottom: 18px;
-        padding: 13px 16px;
-        border-radius: 9px;
-        background: rgba(220, 70, 70, 0.12);
-        border: 1px solid rgba(220, 70, 70, 0.35);
-        color: #ff9999;
-        font-size: 14px;
-    }
-
-    .word-submit {
-        width: 100%;
-        margin-top: 22px;
-        padding: 14px;
-        border: none;
-        border-radius: 9px;
-        background: #858bff;
-        color: #fff;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .word-submit:hover {
-        background: #737aff;
-    }
-
-    .word-submit:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    .word-info {
-        margin-top: 20px;
-        color: var(--text-muted, #9298a5);
-        font-size: 13px;
-        line-height: 1.7;
-    }
-</style>
-
-<section class="word-tool">
-
-    <div class="word-heading">
-        <div class="eyebrow">
-            <span class="eyebrow-line"></span>
-            DOCUMENT CONVERSION
-        </div>
-
+    <header class="tool-page-header">
+        <span class="tool-kicker">CONVERSIONS / WORD TO PDF</span>
         <h1>Word to PDF</h1>
+        <p>Convert Microsoft Word (.docx) documents into clean, universally readable PDF files.</p>
+    </header>
 
-        <p>
-            Convert your Word documents into PDF files while
-            preserving their original layout and formatting.
-        </p>
-    </div>
-
-    <div class="word-panel">
-
+    <div class="tool-main-panel">
         {% if error %}
             <div class="word-error" role="alert">
-                {{ error }}
+                <span class="error-symbol">!</span>
+                <span>{{ error }}</span>
             </div>
         {% endif %}
 
@@ -145,29 +34,24 @@
         >
             {% csrf_token %}
 
-            <label for="wordFile" class="word-dropzone">
-
-                <div class="word-icon">W</div>
-
-                <strong>Choose a Word document</strong>
-
-                <p>
-                    Click here to browse your files
-                </p>
-
-                <p>
-                    Supported format: DOCX · Maximum size: 20 MB
-                </p>
+            <label for="wordFile" class="editorial-dropzone">
+                <div class="dropzone-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h6"/>
+                    </svg>
+                </div>
+                <strong class="dropzone-title">Choose a Word document</strong>
+                <p class="dropzone-hint">Click to browse or drop your DOCX file here</p>
+                <span class="dropzone-meta-badge">DOCX FORMAT · MAXIMUM 20 MB</span>
 
                 <input
                     type="file"
                     name="document"
                     id="wordFile"
-                    class="word-file-input"
+                    class="visually-hidden"
                     accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     required
                 >
-
             </label>
 
             <div
@@ -178,22 +62,20 @@
 
             <button
                 type="submit"
-                class="word-submit"
+                class="btn btn-primary"
                 id="wordSubmit"
+                style="width: 100%; margin-top: 20px;"
             >
-                Convert to PDF
+                Convert to PDF →
             </button>
-
         </form>
 
-        <div class="word-info">
-            <p>• Only DOCX documents are currently supported.</p>
-            <p>• Your document is processed temporarily for conversion.</p>
-            <p>• Your converted PDF will download automatically.</p>
+        <div class="tool-info-strip">
+            <p>• Only Microsoft Word (.docx) documents are supported.</p>
+            <p>• Processing runs in an isolated temporary session with zero permanent storage.</p>
+            <p>• Converted PDF downloads automatically upon completion.</p>
         </div>
-
     </div>
-
 </section>
 
 <script>
@@ -211,7 +93,7 @@
         }
 
         if (!file.name.toLowerCase().endsWith(".docx")) {
-            wordFileName.textContent = "Please select a DOCX file.";
+            wordFileName.textContent = "Please select a valid .docx document.";
             this.value = "";
             return;
         }
@@ -222,7 +104,7 @@
             return;
         }
 
-        wordFileName.textContent = file.name;
+        wordFileName.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
     });
 
     wordForm.addEventListener("submit", function () {
@@ -230,5 +112,4 @@
         wordSubmit.textContent = "Converting document...";
     });
 </script>
-
 {% endblock %}
