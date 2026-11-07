@@ -10,7 +10,7 @@
     <title>{% block title %}MakeitDoc{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <script src="{% static 'js/main.js' %}" defer></script>
-    {% block extra_scripts %}{% endblock %}
+    
 </head>
 <body>
     <div class="app-shell">
@@ -144,5 +144,7 @@
             </footer>
         </div>
     </div>
+
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

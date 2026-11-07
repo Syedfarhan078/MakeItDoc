@@ -1193,3 +1193,118 @@ def compress_pdf(request):
                 )
             },
         )
+
+
+
+@require_http_methods(["GET", "POST"])
+def protect_pdf(request):
+
+    if request.method == "GET":
+        return render(request, "tools/protect_pdf.html")
+
+    uploaded_file = request.FILES.get("document")
+    password = request.POST.get("password", "")
+    confirm_password = request.POST.get("confirm_password", "")
+
+    if not uploaded_file:
+        return render(
+            request,
+            "tools/protect_pdf.html",
+            {"error": "Please select a PDF file."},
+        )
+
+    if uploaded_file.size == 0:
+        return render(
+            request,
+            "tools/protect_pdf.html",
+            {"error": "The selected file is empty."},
+        )
+
+    if uploaded_file.size > MAX_PDF_FILE_SIZE:
+        return render(
+            request,
+            "tools/protect_pdf.html",
+            {"error": "The PDF file must be 20 MB or smaller."},
+        )
+
+    if not uploaded_file.name.lower().endswith(".pdf"):
+        return render(
+            request,
+            "tools/protect_pdf.html",
+            {"error": "Only PDF files are supported."},
+        )
+
+    if len(password) < 8 or len(password) > 40:
+        return render(
+            request,
+            "tools/protect_pdf.html",
+            {"error": "Password must contain between 8 and 40 characters."},
+        )
+
+    if password != confirm_password:
+        return render(
+            request,
+            "tools/protect_pdf.html",
+            {"error": "Passwords do not match."},
+        )
+
+    try:
+        with pymupdf.open(
+            stream=uploaded_file.read(),
+            filetype="pdf",
+        ) as source_pdf:
+
+            if source_pdf.is_encrypted:
+                raise ValueError(
+                    "The uploaded PDF is already password-protected."
+                )
+
+            if len(source_pdf) == 0:
+                raise ValueError("The PDF contains no pages.")
+
+            if len(source_pdf) > MAX_PDF_PAGES:
+                raise ValueError(
+                    f"The PDF cannot contain more than {MAX_PDF_PAGES} pages."
+                )
+
+            # Generate a separate, random owner password.
+            owner_password = os.urandom(20).hex()
+
+            pdf_buffer = BytesIO(
+                source_pdf.tobytes(
+                    garbage=4,
+                    deflate=True,
+                    encryption=pymupdf.PDF_ENCRYPT_AES_256,
+                    owner_pw=owner_password,
+                    user_pw=password,
+                    permissions=-1,
+                )
+            )
+
+        pdf_buffer.seek(0)
+
+        return FileResponse(
+            pdf_buffer,
+            as_attachment=True,
+            filename="MakeitDoc-protected.pdf",
+            content_type="application/pdf",
+        )
+
+    except ValueError as exc:
+        return render(
+            request,
+            "tools/protect_pdf.html",
+            {"error": str(exc)},
+        )
+
+    except (OSError, RuntimeError, pymupdf.FileDataError):
+        return render(
+            request,
+            "tools/protect_pdf.html",
+            {
+                "error": (
+                    "Something went wrong while protecting your PDF. "
+                    "Please check your file and try again."
+                )
+            },
+        )
