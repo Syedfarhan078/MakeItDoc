@@ -13,6 +13,8 @@ urlpatterns = [
     path("tools/protect-pdf/", views.protect_pdf, name="protect_pdf"),
     path("tools/image-editor/", views.image_editor, name="image_editor"),
     path("tools/collage-maker/", views.collage_maker, name="collage_maker"),
+    path("tools/notes/", views.quick_notes, name="quick_notes"),
+    path("tools/quick-notes/", views.quick_notes, name="quick_notes_alias"),
     path("tools/<slug:tool_slug>/", views.tool_page, name="tool_page"),
 
 ]

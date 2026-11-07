@@ -52,3 +52,39 @@ class CollageMakerViewTests(TestCase):
         self.assertContains(response, "layoutCardsGrid")
         self.assertContains(response, "exportDownloadBtn")
 
+
+class QuickNotesViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_dashboard_contains_quick_notes_link(self):
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("quick_notes"))
+        self.assertContains(response, "Quick Notes")
+
+    def test_quick_notes_view_returns_200(self):
+        response = self.client.get(reverse("quick_notes"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "tools/quick_notes.html")
+        self.assertContains(response, "Quick Notes")
+        self.assertContains(response, "notesCanvas")
+        self.assertContains(response, "excalidraw-island-top")
+        self.assertContains(response, "propsPanel")
+        self.assertContains(response, "boardTitleInput")
+        self.assertContains(response, "undoBtn")
+        self.assertContains(response, "redoBtn")
+        self.assertContains(response, "exportPngBtn")
+        self.assertContains(response, "exportSvgBtn")
+        self.assertContains(response, "exportJsonBtn")
+        self.assertContains(response, "fontSizeSegments")
+        self.assertContains(response, "fontSizeRange")
+        self.assertContains(response, "fontSizeDisplay")
+        self.assertContains(response, "decFontSizeBtn")
+        self.assertContains(response, "incFontSizeBtn")
+        self.assertContains(response, "fontFamilySegments")
+        self.assertContains(response, "sizePropGroup")
+        self.assertContains(response, "propWidthInput")
+        self.assertContains(response, "propHeightInput")
+
+

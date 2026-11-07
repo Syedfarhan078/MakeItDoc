@@ -1317,3 +1317,7 @@ def image_editor(request):
 
 def collage_maker(request):
     return render(request, "tools/collage_maker.html")
+
+
+def quick_notes(request):
+    return render(request, "tools/quick_notes.html")
