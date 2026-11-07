@@ -1308,3 +1308,8 @@ def protect_pdf(request):
                 )
             },
         )
+
+
+
+def image_editor(request):
+    return render(request, "tools/image_editor.html")

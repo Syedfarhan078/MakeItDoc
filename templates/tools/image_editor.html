@@ -1,0 +1,2120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Image Editor — MakeitDoc{% endblock %}
+{% block breadcrumb %}Image Editor{% endblock %}
+
+{% block content %}
+
+<style>
+    /* =========================================================
+       IMAGE EDITOR STYLES - MAKEITDOC DESIGN SYSTEM
+       Works seamlessly in both Dark Mode (default) and Light Mode
+       ========================================================= */
+
+    .editor-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* Header */
+    .editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .editor-header-text h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .editor-badge {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: rgba(183, 247, 212, 0.12);
+        color: var(--accent);
+        border: 1px solid rgba(183, 247, 212, 0.25);
+    }
+
+    :root[data-theme="light"] .editor-badge {
+        background: #e5f4eb;
+        color: #25845b;
+        border-color: #cce8d7;
+    }
+
+    .editor-header-text p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    /* Main Grid Layout */
+    .editor-main-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 20px;
+        align-items: stretch;
+    }
+
+    @media (max-width: 1024px) {
+        .editor-main-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Workspace (Left) */
+    .editor-workspace-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        min-height: 640px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Top Command Toolbar */
+    .editor-top-toolbar {
+        padding: 12px 18px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .editor-btn-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .editor-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface-hover);
+        color: var(--text);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    .editor-btn:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-1px);
+    }
+
+    .editor-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .editor-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .editor-btn.btn-accent {
+        background: var(--accent);
+        color: var(--accent-ink);
+        border-color: var(--accent);
+        font-weight: 600;
+    }
+
+    .editor-btn.btn-accent:hover:not(:disabled) {
+        opacity: 0.92;
+        color: var(--accent-ink);
+        box-shadow: 0 2px 12px rgba(183, 247, 212, 0.25);
+    }
+
+    .editor-btn-icon-only {
+        padding: 8px 10px;
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .editor-zoom-pill {
+        display: flex;
+        align-items: center;
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 2px 4px;
+    }
+
+    .editor-zoom-pill button {
+        background: none;
+        border: none;
+        color: var(--text);
+        padding: 6px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: 0.15s;
+    }
+
+    .editor-zoom-pill button:hover:not(:disabled) {
+        background: var(--border);
+    }
+
+    .editor-zoom-level {
+        padding: 0 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        min-width: 48px;
+        text-align: center;
+    }
+
+    /* Canvas Viewport */
+    .editor-viewport {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+        padding: 24px;
+        min-height: 480px;
+        background-color: #141720;
+        background-image:
+            linear-gradient(45deg, #1b202c 25%, transparent 25%),
+            linear-gradient(-45deg, #1b202c 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #1b202c 75%),
+            linear-gradient(-45deg, transparent 75%, #1b202c 75%);
+        background-size: 24px 24px;
+        background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+        outline: none;
+    }
+
+    :root[data-theme="light"] .editor-viewport {
+        background-color: #f0f2f6;
+        background-image:
+            linear-gradient(45deg, #e4e7ed 25%, transparent 25%),
+            linear-gradient(-45deg, #e4e7ed 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #e4e7ed 75%),
+            linear-gradient(-45deg, transparent 75%, #e4e7ed 75%);
+    }
+
+    /* Dropzone (When Empty) */
+    .editor-empty-dropzone {
+        max-width: 500px;
+        width: 100%;
+        padding: 50px 30px;
+        text-align: center;
+        border: 2px dashed var(--border);
+        border-radius: 16px;
+        background: rgba(18, 21, 29, 0.7);
+        backdrop-filter: blur(8px);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    :root[data-theme="light"] .editor-empty-dropzone {
+        background: rgba(255, 255, 255, 0.85);
+    }
+
+    .editor-empty-dropzone.dragover,
+    .editor-empty-dropzone:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .editor-drop-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 16px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        background: rgba(183, 247, 212, 0.12);
+        color: var(--accent);
+        border: 1px solid rgba(183, 247, 212, 0.2);
+    }
+
+    .editor-empty-dropzone h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        color: var(--text);
+    }
+
+    .editor-empty-dropzone p {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 20px 0;
+        line-height: 1.5;
+    }
+
+    .editor-drop-hints {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 11px;
+        color: var(--subtle);
+    }
+
+    .editor-pill {
+        padding: 3px 8px;
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+    }
+
+    /* Active Canvas Wrapper */
+    .editor-canvas-stage {
+        position: relative;
+        display: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+        border-radius: 4px;
+        overflow: hidden;
+        line-height: 0;
+        transform-origin: center center;
+        transition: transform 0.05s ease-out;
+    }
+
+    #mainCanvas {
+        display: block;
+        max-width: 100%;
+        max-height: 70vh;
+        width: auto;
+        height: auto;
+        user-select: none;
+    }
+
+    /* Interactive Crop Overlay */
+    .crop-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        display: none;
+    }
+
+    .crop-mask {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.65);
+        pointer-events: auto;
+    }
+
+    .crop-box {
+        position: absolute;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+        pointer-events: auto;
+        cursor: move;
+    }
+
+    /* Rule of thirds grid lines inside crop box */
+    .crop-grid-h, .crop-grid-v {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.35);
+        pointer-events: none;
+    }
+    .crop-grid-h1 { top: 33.33%; left: 0; right: 0; height: 1px; }
+    .crop-grid-h2 { top: 66.66%; left: 0; right: 0; height: 1px; }
+    .crop-grid-v1 { left: 33.33%; top: 0; bottom: 0; width: 1px; }
+    .crop-grid-v2 { left: 66.66%; top: 0; bottom: 0; width: 1px; }
+
+    /* Handles */
+    .crop-handle {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #ffffff;
+        border: 1px solid #000000;
+        border-radius: 2px;
+        pointer-events: auto;
+    }
+    .crop-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
+    .crop-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
+    .crop-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
+    .crop-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+    .crop-dimension-badge {
+        position: absolute;
+        bottom: 6px;
+        left: 6px;
+        background: rgba(0, 0, 0, 0.75);
+        color: #ffffff;
+        font-size: 11px;
+        font-family: monospace;
+        padding: 2px 6px;
+        border-radius: 4px;
+        pointer-events: none;
+    }
+
+    /* Text Placement Ghost/Preview Box */
+    .text-ghost-overlay {
+        position: absolute;
+        pointer-events: none;
+        display: none;
+        border: 1px dashed var(--accent);
+        background: rgba(183, 247, 212, 0.1);
+        padding: 4px 8px;
+        border-radius: 4px;
+        transform: translate(-50%, -50%);
+    }
+
+    /* Status Bar (Bottom) */
+    .editor-status-bar {
+        padding: 10px 18px;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--muted);
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .editor-status-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .editor-status-meta span strong {
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    /* Sidebar (Right) */
+    .editor-sidebar {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Sidebar Navigation Tabs */
+    .editor-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        padding: 6px 8px 0;
+        gap: 4px;
+        overflow-x: auto;
+    }
+
+    .editor-tab-btn {
+        flex: 1;
+        min-width: 58px;
+        padding: 10px 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .editor-tab-btn:hover {
+        color: var(--text);
+    }
+
+    .editor-tab-btn.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+    }
+
+    /* Tab Panels */
+    .editor-tab-content {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+        max-height: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .tab-pane {
+        display: none;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .tab-pane.active {
+        display: flex;
+    }
+
+    /* Tool Sections & Controls */
+    .tool-group-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--subtle);
+        margin: 0 0 12px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .tool-group-title button {
+        background: none;
+        border: none;
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .tool-group-title button:hover {
+        text-decoration: underline;
+    }
+
+    .control-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .control-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .control-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+    }
+
+    .control-header label {
+        color: var(--text);
+        font-weight: 500;
+    }
+
+    .control-header .value-tag {
+        color: var(--muted);
+        font-family: monospace;
+        font-size: 12px;
+    }
+
+    /* Form Inputs */
+    .editor-range {
+        width: 100%;
+        accent-color: var(--accent);
+        cursor: pointer;
+        height: 5px;
+        background: var(--surface-hover);
+        border-radius: 4px;
+    }
+
+    .editor-input,
+    .editor-select {
+        width: 100%;
+        padding: 9px 12px;
+        font-size: 13px;
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.15s;
+    }
+
+    .editor-input:focus,
+    .editor-select:focus {
+        border-color: var(--accent);
+    }
+
+    .editor-input:disabled,
+    .editor-select:disabled,
+    .editor-range:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    /* Grid of Quick Buttons */
+    .btn-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .btn-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    /* Filter Presets Grid */
+    .filter-presets-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    .filter-preset-btn {
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 4px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted);
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.15s;
+    }
+
+    .filter-preset-btn:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--text);
+    }
+
+    .filter-preset-btn.active {
+        background: rgba(183, 247, 212, 0.12);
+        border-color: var(--accent);
+        color: var(--accent);
+        font-weight: 600;
+    }
+
+    /* Color Swatches */
+    .color-picker-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .color-swatches {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .color-swatch {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        cursor: pointer;
+        transition: transform 0.15s;
+        padding: 0;
+    }
+
+    .color-swatch:hover {
+        transform: scale(1.15);
+    }
+
+    .color-swatch.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px var(--surface);
+    }
+
+    .color-input-native {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 8px;
+        background: none;
+        cursor: pointer;
+    }
+
+    /* Checkbox & Toggle row */
+    .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text);
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+        accent-color: var(--accent);
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    /* Hidden File Input */
+    #fileInput {
+        display: none;
+    }
+</style>
+
+<div class="editor-container">
+
+    <!-- Header -->
+    <div class="editor-header">
+        <div class="editor-header-text">
+            <h1>Image Editor <span class="editor-badge">Studio</span></h1>
+            <p>Enhance, crop, resize, rotate, and add custom text to your photos privately in your browser.</p>
+        </div>
+        <div class="editor-btn-group">
+            <button type="button" class="editor-btn" id="undoBtn" disabled title="Undo (Ctrl+Z)">
+                ↶ Undo
+            </button>
+            <button type="button" class="editor-btn" id="redoBtn" disabled title="Redo (Ctrl+Y)">
+                ↷ Redo
+            </button>
+            <button type="button" class="editor-btn" id="resetBtn" disabled title="Reset all edits">
+                Reset
+            </button>
+            <button type="button" class="editor-btn btn-accent" id="topDownloadBtn" disabled>
+                ↓ Export Image
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Editor Layout -->
+    <div class="editor-main-layout">
+
+        <!-- Left: Workspace / Canvas -->
+        <div class="editor-workspace-card">
+
+            <!-- Top Canvas Controls -->
+            <div class="editor-top-toolbar">
+                <div class="editor-btn-group">
+                    <button type="button" class="editor-btn btn-accent" id="uploadBtn">
+                        <span style="font-size: 16px; line-height: 1;">+</span> Open Image
+                    </button>
+                    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
+                </div>
+
+                <div class="editor-btn-group">
+                    <div class="editor-zoom-pill">
+                        <button type="button" id="zoomOutBtn" title="Zoom Out" disabled>−</button>
+                        <span class="editor-zoom-level" id="zoomLabel">100%</span>
+                        <button type="button" id="zoomInBtn" title="Zoom In" disabled>+</button>
+                    </div>
+                    <button type="button" class="editor-btn editor-btn-icon-only" id="fitZoomBtn" title="Fit to screen" disabled>
+                        Fit
+                    </button>
+                    <button type="button" class="editor-btn editor-btn-icon-only" id="oneToOneZoomBtn" title="100% Size" disabled>
+                        1:1
+                    </button>
+                </div>
+            </div>
+
+            <!-- Viewport Area -->
+            <div class="editor-viewport" id="viewport">
+
+                <!-- Empty State Dropzone -->
+                <div class="editor-empty-dropzone" id="dropzone">
+                    <div class="editor-drop-icon">🖼️</div>
+                    <h3>Drag & Drop your image here</h3>
+                    <p>Or click to browse from your device. You can also paste directly with <strong>Ctrl+V</strong>.</p>
+                    <div class="editor-drop-hints">
+                        <span class="editor-pill">JPG</span>
+                        <span class="editor-pill">PNG</span>
+                        <span class="editor-pill">WEBP</span>
+                        <span class="editor-pill">Up to 25 MB</span>
+                    </div>
+                </div>
+
+                <!-- Canvas Stage -->
+                <div class="editor-canvas-stage" id="canvasStage">
+                    <canvas id="mainCanvas"></canvas>
+
+                    <!-- Interactive Crop Overlay -->
+                    <div class="crop-overlay" id="cropOverlay">
+                        <div class="crop-mask" id="cropMaskTop"></div>
+                        <div class="crop-mask" id="cropMaskBottom"></div>
+                        <div class="crop-mask" id="cropMaskLeft"></div>
+                        <div class="crop-mask" id="cropMaskRight"></div>
+
+                        <div class="crop-box" id="cropBox">
+                            <div class="crop-grid-h crop-grid-h1"></div>
+                            <div class="crop-grid-h crop-grid-h2"></div>
+                            <div class="crop-grid-v crop-grid-v1"></div>
+                            <div class="crop-grid-v crop-grid-v2"></div>
+
+                            <div class="crop-handle tl" data-handle="tl"></div>
+                            <div class="crop-handle tr" data-handle="tr"></div>
+                            <div class="crop-handle bl" data-handle="bl"></div>
+                            <div class="crop-handle br" data-handle="br"></div>
+
+                            <div class="crop-dimension-badge" id="cropDimensions">0 × 0</div>
+                        </div>
+                    </div>
+
+                    <!-- Text Ghost Preview Overlay -->
+                    <div class="text-ghost-overlay" id="textGhost"></div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Status Bar -->
+            <div class="editor-status-bar">
+                <div class="editor-status-meta">
+                    <span id="dimensionMeta">Size: <strong>—</strong></span>
+                    <span id="aspectMeta">Aspect: <strong>—</strong></span>
+                    <span id="fileSizeMeta">File: <strong>—</strong></span>
+                </div>
+                <div id="statusMessage">No image loaded.</div>
+            </div>
+
+        </div>
+
+        <!-- Right: Control Sidebar -->
+        <aside class="editor-sidebar">
+
+            <!-- Tab Navigation -->
+            <div class="editor-tabs">
+                <button type="button" class="editor-tab-btn active" data-tab="tabAdjust">Adjust</button>
+                <button type="button" class="editor-tab-btn" data-tab="tabTransform">Transform</button>
+                <button type="button" class="editor-tab-btn" data-tab="tabResize">Resize</button>
+                <button type="button" class="editor-tab-btn" data-tab="tabText">Text</button>
+                <button type="button" class="editor-tab-btn" data-tab="tabExport">Export</button>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="editor-tab-content">
+
+                <!-- 1. ADJUST TAB -->
+                <div class="tab-pane active" id="tabAdjust">
+
+                    <!-- Presets -->
+                    <div>
+                        <div class="tool-group-title">
+                            <span>Filter Presets</span>
+                        </div>
+                        <div class="filter-presets-grid">
+                            <button type="button" class="filter-preset-btn active" data-preset="none" disabled>Normal</button>
+                            <button type="button" class="filter-preset-btn" data-preset="vivid" disabled>Vivid</button>
+                            <button type="button" class="filter-preset-btn" data-preset="bw" disabled>B&W</button>
+                            <button type="button" class="filter-preset-btn" data-preset="sepia" disabled>Sepia</button>
+                            <button type="button" class="filter-preset-btn" data-preset="warm" disabled>Warm</button>
+                            <button type="button" class="filter-preset-btn" data-preset="cool" disabled>Cool</button>
+                            <button type="button" class="filter-preset-btn" data-preset="dramatic" disabled>Dramatic</button>
+                            <button type="button" class="filter-preset-btn" data-preset="invert" disabled>Invert</button>
+                        </div>
+                    </div>
+
+                    <!-- Sliders -->
+                    <div>
+                        <div class="tool-group-title">
+                            <span>Tonal Adjustments</span>
+                            <button type="button" id="resetAdjustmentsBtn" disabled>Reset Sliders</button>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-header">
+                                <label for="sliderBrightness">Brightness</label>
+                                <span class="value-tag" id="valBrightness">100%</span>
+                            </div>
+                            <input type="range" class="editor-range" id="sliderBrightness" min="0" max="200" value="100" disabled>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-header">
+                                <label for="sliderContrast">Contrast</label>
+                                <span class="value-tag" id="valContrast">100%</span>
+                            </div>
+                            <input type="range" class="editor-range" id="sliderContrast" min="0" max="200" value="100" disabled>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-header">
+                                <label for="sliderSaturation">Saturation</label>
+                                <span class="value-tag" id="valSaturation">100%</span>
+                            </div>
+                            <input type="range" class="editor-range" id="sliderSaturation" min="0" max="200" value="100" disabled>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-header">
+                                <label for="sliderBlur">Blur</label>
+                                <span class="value-tag" id="valBlur">0px</span>
+                            </div>
+                            <input type="range" class="editor-range" id="sliderBlur" min="0" max="20" value="0" disabled>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-header">
+                                <label for="sliderGrayscale">Grayscale</label>
+                                <span class="value-tag" id="valGrayscale">0%</span>
+                            </div>
+                            <input type="range" class="editor-range" id="sliderGrayscale" min="0" max="100" value="0" disabled>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-header">
+                                <label for="sliderSepia">Sepia</label>
+                                <span class="value-tag" id="valSepia">0%</span>
+                            </div>
+                            <input type="range" class="editor-range" id="sliderSepia" min="0" max="100" value="0" disabled>
+                        </div>
+                    </div>
+
+                    <button type="button" class="editor-btn" id="applyAdjustmentsBtn" disabled style="width: 100%;">
+                        ✓ Commit Adjustments to Layers
+                    </button>
+
+                </div>
+
+                <!-- 2. TRANSFORM TAB -->
+                <div class="tab-pane" id="tabTransform">
+
+                    <!-- Rotate -->
+                    <div>
+                        <div class="tool-group-title">Rotate</div>
+                        <div class="btn-grid-3">
+                            <button type="button" class="editor-btn" id="rotateLeftBtn" disabled title="Rotate -90°">↶ -90°</button>
+                            <button type="button" class="editor-btn" id="rotateRightBtn" disabled title="Rotate +90°">↷ +90°</button>
+                            <button type="button" class="editor-btn" id="rotate180Btn" disabled title="Rotate 180°">↻ 180°</button>
+                        </div>
+                    </div>
+
+                    <!-- Flip -->
+                    <div>
+                        <div class="tool-group-title">Flip Orientation</div>
+                        <div class="btn-grid-2">
+                            <button type="button" class="editor-btn" id="flipHBtn" disabled>⇄ Horizontal</button>
+                            <button type="button" class="editor-btn" id="flipVBtn" disabled>⇅ Vertical</button>
+                        </div>
+                    </div>
+
+                    <!-- Crop -->
+                    <div>
+                        <div class="tool-group-title">Crop Tool</div>
+
+                        <div class="control-row">
+                            <label class="control-header" for="cropRatioSelect">
+                                <span>Aspect Ratio</span>
+                            </label>
+                            <select class="editor-select" id="cropRatioSelect" disabled>
+                                <option value="free">Freehand</option>
+                                <option value="1:1">1:1 Square</option>
+                                <option value="4:3">4:3 Standard</option>
+                                <option value="16:9">16:9 Widescreen</option>
+                                <option value="9:16">9:16 Story / Reels</option>
+                                <option value="3:2">3:2 Classic Photo</option>
+                            </select>
+                        </div>
+
+                        <div class="btn-grid-2" style="margin-top: 10px;">
+                            <button type="button" class="editor-btn" id="startCropBtn" disabled>
+                                ✂ Start Crop
+                            </button>
+                            <button type="button" class="editor-btn btn-accent" id="applyCropBtn" disabled>
+                                ✓ Apply Crop
+                            </button>
+                        </div>
+
+                        <button type="button" class="editor-btn" id="cancelCropBtn" disabled style="width: 100%; margin-top: 6px;">
+                            ✕ Cancel Crop
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- 3. RESIZE TAB -->
+                <div class="tab-pane" id="tabResize">
+
+                    <div class="tool-group-title">Dimensions (Pixels)</div>
+
+                    <div class="btn-grid-2">
+                        <div class="control-row">
+                            <label class="control-header" for="resizeWidth">Width</label>
+                            <input type="number" class="editor-input" id="resizeWidth" min="10" max="10000" disabled>
+                        </div>
+                        <div class="control-row">
+                            <label class="control-header" for="resizeHeight">Height</label>
+                            <input type="number" class="editor-input" id="resizeHeight" min="10" max="10000" disabled>
+                        </div>
+                    </div>
+
+                    <label class="checkbox-row" style="margin-top: 4px;">
+                        <input type="checkbox" id="lockAspectCheckbox" checked disabled>
+                        <span>Maintain aspect ratio</span>
+                    </label>
+
+                    <div style="margin-top: 14px;">
+                        <div class="tool-group-title">Scale Presets</div>
+                        <div class="btn-grid-3">
+                            <button type="button" class="editor-btn" data-scale="0.25" disabled>25%</button>
+                            <button type="button" class="editor-btn" data-scale="0.5" disabled>50%</button>
+                            <button type="button" class="editor-btn" data-scale="0.75" disabled>75%</button>
+                            <button type="button" class="editor-btn" data-scale="1" disabled>100%</button>
+                            <button type="button" class="editor-btn" data-scale="1.5" disabled>150%</button>
+                            <button type="button" class="editor-btn" data-scale="2" disabled>200%</button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="editor-btn btn-accent" id="applyResizeBtn" disabled style="width: 100%; margin-top: 16px;">
+                        Apply New Dimensions
+                    </button>
+
+                </div>
+
+                <!-- 4. TEXT TAB -->
+                <div class="tab-pane" id="tabText">
+
+                    <div class="control-row">
+                        <label class="control-header" for="textInput">Text Content</label>
+                        <input type="text" class="editor-input" id="textInput" placeholder="Enter text..." maxlength="120" disabled>
+                    </div>
+
+                    <div class="btn-grid-2">
+                        <div class="control-row">
+                            <label class="control-header" for="fontFamilySelect">Font</label>
+                            <select class="editor-select" id="fontFamilySelect" disabled>
+                                <option value="DM Sans, sans-serif">DM Sans</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="Impact, fantasy">Impact</option>
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="'Courier New', monospace">Courier</option>
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label class="control-header" for="textSizeInput">Size</label>
+                            <input type="number" class="editor-input" id="textSizeInput" value="48" min="10" max="250" disabled>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <label class="control-header">Text Color</label>
+                        <div class="color-picker-wrap">
+                            <input type="color" class="color-input-native" id="textColorPicker" value="#ffffff" disabled>
+                            <div class="color-swatches">
+                                <button type="button" class="color-swatch active" style="background: #ffffff;" data-color="#ffffff"></button>
+                                <button type="button" class="color-swatch" style="background: #000000;" data-color="#000000"></button>
+                                <button type="button" class="color-swatch" style="background: #ef4444;" data-color="#ef4444"></button>
+                                <button type="button" class="color-swatch" style="background: #3b82f6;" data-color="#3b82f6"></button>
+                                <button type="button" class="color-swatch" style="background: #10b981;" data-color="#10b981"></button>
+                                <button type="button" class="color-swatch" style="background: #f59e0b;" data-color="#f59e0b"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-grid-3">
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="textBoldCheckbox" checked disabled>
+                            <span>Bold</span>
+                        </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="textItalicCheckbox" disabled>
+                            <span>Italic</span>
+                        </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="textShadowCheckbox" checked disabled>
+                            <span>Outline</span>
+                        </label>
+                    </div>
+
+                    <div class="control-row" style="margin-top: 8px;">
+                        <label class="control-header">Placement</label>
+                        <select class="editor-select" id="textPositionPreset" disabled>
+                            <option value="center">Center</option>
+                            <option value="top">Top Center</option>
+                            <option value="bottom">Bottom Center</option>
+                            <option value="custom">Click on image to place</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="editor-btn btn-accent" id="addTextBtn" disabled style="width: 100%; margin-top: 10px;">
+                        + Add Text to Image
+                    </button>
+
+                </div>
+
+                <!-- 5. EXPORT TAB -->
+                <div class="tab-pane" id="tabExport">
+
+                    <div class="control-row">
+                        <label class="control-header" for="exportFormatSelect">Export Format</label>
+                        <select class="editor-select" id="exportFormatSelect" disabled>
+                            <option value="image/png">PNG (Lossless, transparent)</option>
+                            <option value="image/jpeg">JPEG (High compatibility)</option>
+                            <option value="image/webp">WEBP (Compact modern)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row" id="qualityControlRow" style="display: none;">
+                        <div class="control-header">
+                            <label for="exportQualityRange">Image Quality</label>
+                            <span class="value-tag" id="valQuality">92%</span>
+                        </div>
+                        <input type="range" class="editor-range" id="exportQualityRange" min="10" max="100" value="92">
+                    </div>
+
+                    <div class="control-row">
+                        <label class="control-header" for="exportFilenameInput">File Name</label>
+                        <input type="text" class="editor-input" id="exportFilenameInput" value="makeitdoc-edited" disabled>
+                    </div>
+
+                    <button type="button" class="editor-btn btn-accent" id="exportDownloadBtn" disabled style="width: 100%; margin-top: 10px; padding: 12px;">
+                        ↓ Download Image
+                    </button>
+
+                    <button type="button" class="editor-btn" id="copyClipboardBtn" disabled style="width: 100%; margin-top: 8px;">
+                        📋 Copy to Clipboard
+                    </button>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ==========================================
+    // DOM REFERENCES
+    // ==========================================
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const canvasStage = document.getElementById("canvasStage");
+    const canvas = document.getElementById("mainCanvas");
+    const ctx = canvas.getContext("2d");
+    const viewport = document.getElementById("viewport");
+
+    // Status bar
+    const statusMsg = document.getElementById("statusMessage");
+    const dimensionMeta = document.getElementById("dimensionMeta");
+    const aspectMeta = document.getElementById("aspectMeta");
+    const fileSizeMeta = document.getElementById("fileSizeMeta");
+
+    // Crop Overlay elements
+    const cropOverlay = document.getElementById("cropOverlay");
+    const cropBox = document.getElementById("cropBox");
+    const cropMaskTop = document.getElementById("cropMaskTop");
+    const cropMaskBottom = document.getElementById("cropMaskBottom");
+    const cropMaskLeft = document.getElementById("cropMaskLeft");
+    const cropMaskRight = document.getElementById("cropMaskRight");
+    const cropDimensions = document.getElementById("cropDimensions");
+
+    // Text Ghost preview
+    const textGhost = document.getElementById("textGhost");
+
+    // Buttons
+    const undoBtn = document.getElementById("undoBtn");
+    const redoBtn = document.getElementById("redoBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const topDownloadBtn = document.getElementById("topDownloadBtn");
+    const exportDownloadBtn = document.getElementById("exportDownloadBtn");
+    const copyClipboardBtn = document.getElementById("copyClipboardBtn");
+
+    // Zoom
+    const zoomInBtn = document.getElementById("zoomInBtn");
+    const zoomOutBtn = document.getElementById("zoomOutBtn");
+    const zoomLabel = document.getElementById("zoomLabel");
+    const fitZoomBtn = document.getElementById("fitZoomBtn");
+    const oneToOneZoomBtn = document.getElementById("oneToOneZoomBtn");
+
+    // Adjustments
+    const sliderBrightness = document.getElementById("sliderBrightness");
+    const sliderContrast = document.getElementById("sliderContrast");
+    const sliderSaturation = document.getElementById("sliderSaturation");
+    const sliderBlur = document.getElementById("sliderBlur");
+    const sliderGrayscale = document.getElementById("sliderGrayscale");
+    const sliderSepia = document.getElementById("sliderSepia");
+
+    const valBrightness = document.getElementById("valBrightness");
+    const valContrast = document.getElementById("valContrast");
+    const valSaturation = document.getElementById("valSaturation");
+    const valBlur = document.getElementById("valBlur");
+    const valGrayscale = document.getElementById("valGrayscale");
+    const valSepia = document.getElementById("valSepia");
+
+    const resetAdjustmentsBtn = document.getElementById("resetAdjustmentsBtn");
+    const applyAdjustmentsBtn = document.getElementById("applyAdjustmentsBtn");
+
+    // Transform
+    const rotateLeftBtn = document.getElementById("rotateLeftBtn");
+    const rotateRightBtn = document.getElementById("rotateRightBtn");
+    const rotate180Btn = document.getElementById("rotate180Btn");
+    const flipHBtn = document.getElementById("flipHBtn");
+    const flipVBtn = document.getElementById("flipVBtn");
+
+    const cropRatioSelect = document.getElementById("cropRatioSelect");
+    const startCropBtn = document.getElementById("startCropBtn");
+    const applyCropBtn = document.getElementById("applyCropBtn");
+    const cancelCropBtn = document.getElementById("cancelCropBtn");
+
+    // Resize
+    const resizeWidth = document.getElementById("resizeWidth");
+    const resizeHeight = document.getElementById("resizeHeight");
+    const lockAspectCheckbox = document.getElementById("lockAspectCheckbox");
+    const applyResizeBtn = document.getElementById("applyResizeBtn");
+
+    // Text
+    const textInput = document.getElementById("textInput");
+    const fontFamilySelect = document.getElementById("fontFamilySelect");
+    const textSizeInput = document.getElementById("textSizeInput");
+    const textColorPicker = document.getElementById("textColorPicker");
+    const textBoldCheckbox = document.getElementById("textBoldCheckbox");
+    const textItalicCheckbox = document.getElementById("textItalicCheckbox");
+    const textShadowCheckbox = document.getElementById("textShadowCheckbox");
+    const textPositionPreset = document.getElementById("textPositionPreset");
+    const addTextBtn = document.getElementById("addTextBtn");
+
+    // Export
+    const exportFormatSelect = document.getElementById("exportFormatSelect");
+    const exportQualityRange = document.getElementById("exportQualityRange");
+    const qualityControlRow = document.getElementById("qualityControlRow");
+    const valQuality = document.getElementById("valQuality");
+    const exportFilenameInput = document.getElementById("exportFilenameInput");
+
+    // ==========================================
+    // STATE MANAGEMENT
+    // ==========================================
+    let hasImage = false;
+    let originalImageSnapshot = null; // Stored to support "Reset to Original"
+    let baseCanvas = document.createElement("canvas"); // Holds pristine unadjusted pixels
+    let baseCtx = baseCanvas.getContext("2d");
+
+    // History stack for Undo / Redo
+    const MAX_HISTORY = 30;
+    let historyStack = [];
+    let historyIndex = -1;
+
+    // Display Adjustments (non-destructive)
+    const adjustments = {
+        brightness: 100,
+        contrast: 100,
+        saturation: 100,
+        blur: 0,
+        grayscale: 0,
+        sepia: 0,
+        invert: 0
+    };
+
+    // Zoom & Pan
+    let currentZoom = 1.0;
+
+    // Crop State
+    let isCropping = false;
+    let cropRect = { x: 0, y: 0, w: 0, h: 0 };
+    let cropDragMode = null; // 'create', 'move', 'tl', 'tr', 'bl', 'br'
+    let cropStartPoint = { x: 0, y: 0 };
+    let cropInitialRect = null;
+
+    // Custom text click placement
+    let textCustomPlacement = { x: 0.5, y: 0.5 }; // normalized (0.0 to 1.0)
+
+    // Current File metadata
+    let currentFileName = "makeitdoc-edited";
+    let currentFileSize = "";
+
+    // List of all controls enabled only when an image is loaded
+    const dynamicControls = [
+        resetBtn, topDownloadBtn, zoomInBtn, zoomOutBtn, fitZoomBtn, oneToOneZoomBtn,
+        resetAdjustmentsBtn, applyAdjustmentsBtn, sliderBrightness, sliderContrast,
+        sliderSaturation, sliderBlur, sliderGrayscale, sliderSepia,
+        rotateLeftBtn, rotateRightBtn, rotate180Btn, flipHBtn, flipVBtn,
+        cropRatioSelect, startCropBtn, resizeWidth, resizeHeight,
+        lockAspectCheckbox, applyResizeBtn, textInput, fontFamilySelect,
+        textSizeInput, textColorPicker, textBoldCheckbox, textItalicCheckbox,
+        textShadowCheckbox, textPositionPreset, addTextBtn, exportFormatSelect,
+        exportFilenameInput, exportDownloadBtn, copyClipboardBtn
+    ];
+
+    function setControlsEnabled(enabled) {
+        dynamicControls.forEach(ctrl => {
+            if (ctrl) ctrl.disabled = !enabled;
+        });
+        document.querySelectorAll(".filter-preset-btn, [data-scale]").forEach(b => {
+            b.disabled = !enabled;
+        });
+        updateHistoryButtons();
+    }
+
+    function updateStatus(msg) {
+        statusMsg.textContent = msg;
+    }
+
+    // ==========================================
+    // RENDER & FILTER PIPELINE
+    // ==========================================
+    function getCssFilterString() {
+        return [
+            `brightness(${adjustments.brightness}%)`,
+            `contrast(${adjustments.contrast}%)`,
+            `saturate(${adjustments.saturation}%)`,
+            `blur(${adjustments.blur}px)`,
+            `grayscale(${adjustments.grayscale}%)`,
+            `sepia(${adjustments.sepia}%)`,
+            `invert(${adjustments.invert}%)`
+        ].join(" ");
+    }
+
+    // Render from baseCanvas to visible display canvas
+    function renderDisplay() {
+        if (!hasImage) return;
+
+        canvas.width = baseCanvas.width;
+        canvas.height = baseCanvas.height;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.filter = getCssFilterString();
+        ctx.drawImage(baseCanvas, 0, 0);
+        ctx.filter = "none";
+
+        applyZoom();
+        updateMetadata();
+    }
+
+    function updateMetadata() {
+        if (!hasImage) return;
+        const w = baseCanvas.width;
+        const h = baseCanvas.height;
+        dimensionMeta.innerHTML = `Size: <strong>${w} × ${h} px</strong>`;
+        aspectMeta.innerHTML = `Aspect: <strong>${getAspectRatioLabel(w, h)}</strong>`;
+        fileSizeMeta.innerHTML = currentFileSize ? `File: <strong>${currentFileSize}</strong>` : "";
+
+        resizeWidth.value = w;
+        resizeHeight.value = h;
+    }
+
+    function getAspectRatioLabel(w, h) {
+        const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
+        const divisor = gcd(w, h);
+        const ratioW = w / divisor;
+        const ratioH = h / divisor;
+        if (ratioW <= 32 && ratioH <= 32) return `${ratioW}:${ratioH}`;
+        return `${(w / h).toFixed(2)}:1`;
+    }
+
+    // ==========================================
+    // HISTORY STACK (UNDO / REDO)
+    // ==========================================
+    function pushHistory(actionName) {
+        if (!hasImage) return;
+
+        // Discard any forward redo states
+        if (historyIndex < historyStack.length - 1) {
+            historyStack = historyStack.slice(0, historyIndex + 1);
+        }
+
+        // Create deep clone canvas snapshot
+        const snapshot = document.createElement("canvas");
+        snapshot.width = baseCanvas.width;
+        snapshot.height = baseCanvas.height;
+        snapshot.getContext("2d").drawImage(baseCanvas, 0, 0);
+
+        historyStack.push({
+            canvas: snapshot,
+            name: actionName
+        });
+
+        if (historyStack.length > MAX_HISTORY) {
+            historyStack.shift();
+        } else {
+            historyIndex++;
+        }
+
+        updateHistoryButtons();
+        if (actionName) updateStatus(actionName);
+    }
+
+    function updateHistoryButtons() {
+        undoBtn.disabled = !hasImage || historyIndex <= 0;
+        redoBtn.disabled = !hasImage || historyIndex >= historyStack.length - 1;
+    }
+
+    function undo() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            restoreState(historyStack[historyIndex]);
+            updateHistoryButtons();
+            updateStatus(`Undo: ${historyStack[historyIndex + 1].name || "Action"}`);
+        }
+    }
+
+    function redo() {
+        if (historyIndex < historyStack.length - 1) {
+            historyIndex++;
+            restoreState(historyStack[historyIndex]);
+            updateHistoryButtons();
+            updateStatus(`Redo: ${historyStack[historyIndex].name || "Action"}`);
+        }
+    }
+
+    function restoreState(entry) {
+        baseCanvas.width = entry.canvas.width;
+        baseCanvas.height = entry.canvas.height;
+        baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+        baseCtx.drawImage(entry.canvas, 0, 0);
+
+        if (isCropping) cancelCrop();
+        renderDisplay();
+    }
+
+    // Keyboard shortcuts for Undo/Redo
+    window.addEventListener("keydown", function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+            if (e.shiftKey) {
+                e.preventDefault();
+                redo();
+            } else {
+                e.preventDefault();
+                undo();
+            }
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+            e.preventDefault();
+            redo();
+        }
+    });
+
+    undoBtn.addEventListener("click", undo);
+    redoBtn.addEventListener("click", redo);
+
+    // ==========================================
+    // IMAGE LOADING & OPENING
+    // ==========================================
+    function loadImageFromFile(file) {
+        if (!file) return;
+
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            alert("Please select a valid image file (JPG, PNG, or WEBP).");
+            return;
+        }
+
+        if (file.size > 25 * 1024 * 1024) {
+            alert("Image file size must be under 25 MB.");
+            return;
+        }
+
+        currentFileSize = (file.size / (1024 * 1024)).toFixed(2) + " MB";
+        currentFileName = file.name.replace(/\.[^/.]+$/, "");
+        exportFilenameInput.value = `${currentFileName}-edited`;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function () {
+                initEditorWithImage(img);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function initEditorWithImage(img) {
+        baseCanvas.width = img.naturalWidth;
+        baseCanvas.height = img.naturalHeight;
+        baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+        baseCtx.drawImage(img, 0, 0);
+
+        // Store original snapshot for "Reset"
+        originalImageSnapshot = document.createElement("canvas");
+        originalImageSnapshot.width = img.naturalWidth;
+        originalImageSnapshot.height = img.naturalHeight;
+        originalImageSnapshot.getContext("2d").drawImage(img, 0, 0);
+
+        hasImage = true;
+        historyStack = [];
+        historyIndex = -1;
+
+        resetAdjustments();
+        cancelCrop();
+
+        dropzone.style.display = "none";
+        canvasStage.style.display = "block";
+
+        setControlsEnabled(true);
+        pushHistory("Opened image");
+        fitToScreen();
+        updateStatus(`Loaded ${img.naturalWidth} × ${img.naturalHeight} px`);
+    }
+
+    // File Picker Trigger
+    uploadBtn.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", function () {
+        if (this.files && this.files[0]) {
+            loadImageFromFile(this.files[0]);
+            this.value = "";
+        }
+    });
+
+    // Drag and Drop
+    ["dragenter", "dragover"].forEach(evt => {
+        viewport.addEventListener(evt, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add("dragover");
+        });
+    });
+
+    ["dragleave", "drop"].forEach(evt => {
+        viewport.addEventListener(evt, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove("dragover");
+        });
+    });
+
+    viewport.addEventListener("drop", e => {
+        const files = e.dataTransfer.files;
+        if (files && files[0]) {
+            loadImageFromFile(files[0]);
+        }
+    });
+
+    // Clipboard Paste (Ctrl+V) anywhere
+    window.addEventListener("paste", e => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let item of items) {
+            if (item.kind === "file" && item.type.startsWith("image/")) {
+                const blob = item.getAsFile();
+                loadImageFromFile(blob);
+                break;
+            }
+        }
+    });
+
+    // ==========================================
+    // ZOOM & FIT
+    // ==========================================
+    function applyZoom() {
+        canvasStage.style.transform = `scale(${currentZoom})`;
+        zoomLabel.textContent = `${Math.round(currentZoom * 100)}%`;
+    }
+
+    function fitToScreen() {
+        if (!hasImage) return;
+        const pad = 60;
+        const availW = viewport.clientWidth - pad;
+        const availH = viewport.clientHeight - pad;
+        const scaleX = availW / baseCanvas.width;
+        const scaleY = availH / baseCanvas.height;
+        currentZoom = Math.min(1.0, scaleX, scaleY);
+        currentZoom = Math.max(0.1, currentZoom);
+        applyZoom();
+    }
+
+    fitZoomBtn.addEventListener("click", fitToScreen);
+    oneToOneZoomBtn.addEventListener("click", () => {
+        currentZoom = 1.0;
+        applyZoom();
+    });
+
+    zoomInBtn.addEventListener("click", () => {
+        currentZoom = Math.min(3.0, currentZoom + 0.15);
+        applyZoom();
+    });
+
+    zoomOutBtn.addEventListener("click", () => {
+        currentZoom = Math.max(0.15, currentZoom - 0.15);
+        applyZoom();
+    });
+
+    // ==========================================
+    // ADJUSTMENTS & PRESET FILTERS
+    // ==========================================
+    function setupAdjustmentSlider(slider, labelEl, key, unit = "%") {
+        slider.addEventListener("input", function () {
+            const val = Number(this.value);
+            adjustments[key] = val;
+            labelEl.textContent = `${val}${unit}`;
+            renderDisplay();
+        });
+    }
+
+    setupAdjustmentSlider(sliderBrightness, valBrightness, "brightness", "%");
+    setupAdjustmentSlider(sliderContrast, valContrast, "contrast", "%");
+    setupAdjustmentSlider(sliderSaturation, valSaturation, "saturation", "%");
+    setupAdjustmentSlider(sliderBlur, valBlur, "blur", "px");
+    setupAdjustmentSlider(sliderGrayscale, valGrayscale, "grayscale", "%");
+    setupAdjustmentSlider(sliderSepia, valSepia, "sepia", "%");
+
+    function resetAdjustments() {
+        adjustments.brightness = 100;
+        adjustments.contrast = 100;
+        adjustments.saturation = 100;
+        adjustments.blur = 0;
+        adjustments.grayscale = 0;
+        adjustments.sepia = 0;
+        adjustments.invert = 0;
+
+        sliderBrightness.value = 100; valBrightness.textContent = "100%";
+        sliderContrast.value = 100; valContrast.textContent = "100%";
+        sliderSaturation.value = 100; valSaturation.textContent = "100%";
+        sliderBlur.value = 0; valBlur.textContent = "0px";
+        sliderGrayscale.value = 0; valGrayscale.textContent = "0%";
+        sliderSepia.value = 0; valSepia.textContent = "0%";
+
+        document.querySelectorAll(".filter-preset-btn").forEach(b => {
+            b.classList.toggle("active", b.dataset.preset === "none");
+        });
+
+        renderDisplay();
+    }
+
+    resetAdjustmentsBtn.addEventListener("click", resetAdjustments);
+
+    // Apply / Commit adjustments directly to baseCanvas
+    applyAdjustmentsBtn.addEventListener("click", function () {
+        if (!hasImage) return;
+        const temp = document.createElement("canvas");
+        temp.width = baseCanvas.width;
+        temp.height = baseCanvas.height;
+        const tempCtx = temp.getContext("2d");
+
+        tempCtx.filter = getCssFilterString();
+        tempCtx.drawImage(baseCanvas, 0, 0);
+
+        baseCanvas.width = temp.width;
+        baseCanvas.height = temp.height;
+        baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+        baseCtx.drawImage(temp, 0, 0);
+
+        resetAdjustments();
+        pushHistory("Applied adjustments");
+        updateStatus("Adjustments committed to image.");
+    });
+
+    // Preset filter configs
+    const PRESETS = {
+        none: { brightness: 100, contrast: 100, saturation: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0 },
+        vivid: { brightness: 105, contrast: 125, saturation: 145, blur: 0, grayscale: 0, sepia: 0, invert: 0 },
+        bw: { brightness: 100, contrast: 120, saturation: 0, blur: 0, grayscale: 100, sepia: 0, invert: 0 },
+        sepia: { brightness: 95, contrast: 105, saturation: 90, blur: 0, grayscale: 0, sepia: 85, invert: 0 },
+        warm: { brightness: 105, contrast: 110, saturation: 120, blur: 0, grayscale: 0, sepia: 30, invert: 0 },
+        cool: { brightness: 100, contrast: 105, saturation: 115, blur: 0, grayscale: 15, sepia: 0, invert: 0 },
+        dramatic: { brightness: 90, contrast: 145, saturation: 110, blur: 0, grayscale: 0, sepia: 0, invert: 0 },
+        invert: { brightness: 100, contrast: 100, saturation: 100, blur: 0, grayscale: 0, sepia: 0, invert: 100 }
+    };
+
+    document.querySelectorAll(".filter-preset-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const p = PRESETS[this.dataset.preset];
+            if (!p) return;
+
+            Object.assign(adjustments, p);
+
+            sliderBrightness.value = p.brightness; valBrightness.textContent = `${p.brightness}%`;
+            sliderContrast.value = p.contrast; valContrast.textContent = `${p.contrast}%`;
+            sliderSaturation.value = p.saturation; valSaturation.textContent = `${p.saturation}%`;
+            sliderBlur.value = p.blur; valBlur.textContent = `${p.blur}px`;
+            sliderGrayscale.value = p.grayscale; valGrayscale.textContent = `${p.grayscale}%`;
+            sliderSepia.value = p.sepia; valSepia.textContent = `${p.sepia}%`;
+
+            document.querySelectorAll(".filter-preset-btn").forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+
+            renderDisplay();
+        });
+    });
+
+    // ==========================================
+    // TRANSFORM (ROTATE & FLIP)
+    // ==========================================
+    function rotateBase(degrees) {
+        if (!hasImage) return;
+
+        const rad = (degrees * Math.PI) / 180;
+        const temp = document.createElement("canvas");
+        const tempCtx = temp.getContext("2d");
+
+        if (degrees === 90 || degrees === 270 || degrees === -90) {
+            temp.width = baseCanvas.height;
+            temp.height = baseCanvas.width;
+        } else {
+            temp.width = baseCanvas.width;
+            temp.height = baseCanvas.height;
+        }
+
+        tempCtx.translate(temp.width / 2, temp.height / 2);
+        tempCtx.rotate(rad);
+        tempCtx.drawImage(baseCanvas, -baseCanvas.width / 2, -baseCanvas.height / 2);
+
+        baseCanvas.width = temp.width;
+        baseCanvas.height = temp.height;
+        baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+        baseCtx.drawImage(temp, 0, 0);
+
+        pushHistory(`Rotated ${degrees}°`);
+        renderDisplay();
+    }
+
+    rotateLeftBtn.addEventListener("click", () => rotateBase(-90));
+    rotateRightBtn.addEventListener("click", () => rotateBase(90));
+    rotate180Btn.addEventListener("click", () => rotateBase(180));
+
+    function flipBase(horizontal, vertical) {
+        if (!hasImage) return;
+
+        const temp = document.createElement("canvas");
+        temp.width = baseCanvas.width;
+        temp.height = baseCanvas.height;
+        const tempCtx = temp.getContext("2d");
+
+        tempCtx.translate(horizontal ? temp.width : 0, vertical ? temp.height : 0);
+        tempCtx.scale(horizontal ? -1 : 1, vertical ? -1 : 1);
+        tempCtx.drawImage(baseCanvas, 0, 0);
+
+        baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+        baseCtx.drawImage(temp, 0, 0);
+
+        pushHistory(horizontal ? "Flipped horizontal" : "Flipped vertical");
+        renderDisplay();
+    }
+
+    flipHBtn.addEventListener("click", () => flipBase(true, false));
+    flipVBtn.addEventListener("click", () => flipBase(false, true));
+
+    // ==========================================
+    // INTERACTIVE CROP
+    // ==========================================
+    function startCrop() {
+        if (!hasImage) return;
+        isCropping = true;
+
+        cropOverlay.style.display = "block";
+        startCropBtn.disabled = true;
+        applyCropBtn.disabled = false;
+        cancelCropBtn.disabled = false;
+
+        // Default initial crop box: centered 80%
+        const w = Math.round(canvas.clientWidth * 0.8);
+        const h = Math.round(canvas.clientHeight * 0.8);
+        const x = Math.round((canvas.clientWidth - w) / 2);
+        const y = Math.round((canvas.clientHeight - h) / 2);
+
+        setCropBox(x, y, w, h);
+        updateStatus("Adjust the crop box or drag corners, then click Apply Crop.");
+    }
+
+    function cancelCrop() {
+        isCropping = false;
+        cropOverlay.style.display = "none";
+        startCropBtn.disabled = false;
+        applyCropBtn.disabled = true;
+        cancelCropBtn.disabled = true;
+        updateStatus("Crop cancelled.");
+    }
+
+    function setCropBox(x, y, w, h) {
+        const maxW = canvas.clientWidth;
+        const maxH = canvas.clientHeight;
+
+        w = Math.max(20, Math.min(w, maxW));
+        h = Math.max(20, Math.min(h, maxH));
+        x = Math.max(0, Math.min(x, maxW - w));
+        y = Math.max(0, Math.min(y, maxH - h));
+
+        // Enforce ratio if selected
+        const ratioVal = cropRatioSelect.value;
+        if (ratioVal !== "free") {
+            const [rw, rh] = ratioVal.split(":").map(Number);
+            const targetRatio = rw / rh;
+            if (w / h > targetRatio) {
+                w = Math.round(h * targetRatio);
+            } else {
+                h = Math.round(w / targetRatio);
+            }
+        }
+
+        cropRect = { x, y, w, h };
+
+        cropBox.style.left = `${x}px`;
+        cropBox.style.top = `${y}px`;
+        cropBox.style.width = `${w}px`;
+        cropBox.style.height = `${h}px`;
+
+        // Update 4 surrounding dark masks
+        cropMaskTop.style.cssText = `top:0; left:0; right:0; height:${y}px;`;
+        cropMaskBottom.style.cssText = `top:${y + h}px; left:0; right:0; bottom:0;`;
+        cropMaskLeft.style.cssText = `top:${y}px; left:0; width:${x}px; height:${h}px;`;
+        cropMaskRight.style.cssText = `top:${y}px; left:${x + w}px; right:0; height:${h}px;`;
+
+        // Calculate native pixel dimensions for badge
+        const scale = baseCanvas.width / canvas.clientWidth;
+        const nativeW = Math.round(w * scale);
+        const nativeH = Math.round(h * scale);
+        cropDimensions.textContent = `${nativeW} × ${nativeH} px`;
+    }
+
+    function applyCrop() {
+        if (!hasImage || !isCropping) return;
+
+        const scale = baseCanvas.width / canvas.clientWidth;
+        const srcX = Math.round(cropRect.x * scale);
+        const srcY = Math.round(cropRect.y * scale);
+        const srcW = Math.round(cropRect.w * scale);
+        const srcH = Math.round(cropRect.h * scale);
+
+        if (srcW < 2 || srcH < 2) return;
+
+        const cropped = document.createElement("canvas");
+        cropped.width = srcW;
+        cropped.height = srcH;
+        const cropCtx = cropped.getContext("2d");
+
+        cropCtx.drawImage(baseCanvas, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+
+        baseCanvas.width = srcW;
+        baseCanvas.height = srcH;
+        baseCtx.clearRect(0, 0, srcW, srcH);
+        baseCtx.drawImage(cropped, 0, 0);
+
+        cancelCrop();
+        pushHistory(`Cropped to ${srcW} × ${srcH}`);
+        renderDisplay();
+        fitToScreen();
+    }
+
+    startCropBtn.addEventListener("click", startCrop);
+    applyCropBtn.addEventListener("click", applyCrop);
+    cancelCropBtn.addEventListener("click", cancelCrop);
+
+    cropRatioSelect.addEventListener("change", function () {
+        if (isCropping) {
+            setCropBox(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+        }
+    });
+
+    // Pointer events on crop box and handles
+    cropBox.addEventListener("pointerdown", function (e) {
+        if (!isCropping) return;
+        cropDragMode = e.target.dataset.handle || "move";
+        cropStartPoint = { x: e.clientX, y: e.clientY };
+        cropInitialRect = { ...cropRect };
+        cropBox.setPointerCapture(e.pointerId);
+        e.stopPropagation();
+    });
+
+    cropBox.addEventListener("pointermove", function (e) {
+        if (!isCropping || !cropDragMode) return;
+        const dx = (e.clientX - cropStartPoint.x) / currentZoom;
+        const dy = (e.clientY - cropStartPoint.y) / currentZoom;
+
+        let { x, y, w, h } = cropInitialRect;
+
+        if (cropDragMode === "move") {
+            x += dx;
+            y += dy;
+        } else if (cropDragMode === "br") {
+            w += dx;
+            h += dy;
+        } else if (cropDragMode === "bl") {
+            x += dx;
+            w -= dx;
+            h += dy;
+        } else if (cropDragMode === "tr") {
+            y += dy;
+            w += dx;
+            h -= dy;
+        } else if (cropDragMode === "tl") {
+            x += dx;
+            y += dy;
+            w -= dx;
+            h -= dy;
+        }
+
+        setCropBox(x, y, w, h);
+    });
+
+    cropBox.addEventListener("pointerup", function () {
+        cropDragMode = null;
+    });
+
+    // ==========================================
+    // RESIZE
+    // ==========================================
+    resizeWidth.addEventListener("input", function () {
+        if (!hasImage || !lockAspectCheckbox.checked) return;
+        const w = Number(this.value);
+        if (w > 0) {
+            const ratio = baseCanvas.height / baseCanvas.width;
+            resizeHeight.value = Math.round(w * ratio);
+        }
+    });
+
+    resizeHeight.addEventListener("input", function () {
+        if (!hasImage || !lockAspectCheckbox.checked) return;
+        const h = Number(this.value);
+        if (h > 0) {
+            const ratio = baseCanvas.width / baseCanvas.height;
+            resizeWidth.value = Math.round(h * ratio);
+        }
+    });
+
+    document.querySelectorAll("[data-scale]").forEach(btn => {
+        btn.addEventListener("click", function () {
+            if (!hasImage) return;
+            const factor = Number(this.dataset.scale);
+            resizeWidth.value = Math.round(baseCanvas.width * factor);
+            resizeHeight.value = Math.round(baseCanvas.height * factor);
+        });
+    });
+
+    applyResizeBtn.addEventListener("click", function () {
+        if (!hasImage) return;
+        const targetW = parseInt(resizeWidth.value, 10);
+        const targetH = parseInt(resizeHeight.value, 10);
+
+        if (isNaN(targetW) || targetW <= 0 || isNaN(targetH) || targetH <= 0) {
+            alert("Please enter valid positive dimensions.");
+            return;
+        }
+
+        const resized = document.createElement("canvas");
+        resized.width = targetW;
+        resized.height = targetH;
+        const rCtx = resized.getContext("2d");
+
+        rCtx.imageSmoothingQuality = "high";
+        rCtx.drawImage(baseCanvas, 0, 0, targetW, targetH);
+
+        baseCanvas.width = targetW;
+        baseCanvas.height = targetH;
+        baseCtx.clearRect(0, 0, targetW, targetH);
+        baseCtx.drawImage(resized, 0, 0);
+
+        pushHistory(`Resized to ${targetW} × ${targetH}`);
+        renderDisplay();
+        fitToScreen();
+    });
+
+    // ==========================================
+    // ADD TEXT TO IMAGE
+    // ==========================================
+    textColorPicker.addEventListener("input", function () {
+        document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("active"));
+    });
+
+    document.querySelectorAll(".color-swatch").forEach(swatch => {
+        swatch.addEventListener("click", function () {
+            document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("active"));
+            this.classList.add("active");
+            textColorPicker.value = this.dataset.color;
+        });
+    });
+
+    // Interactive canvas click for custom text position
+    canvas.addEventListener("click", function (e) {
+        if (!hasImage || isCropping) return;
+        if (textPositionPreset.value === "custom") {
+            const rect = canvas.getBoundingClientRect();
+            textCustomPlacement.x = (e.clientX - rect.left) / rect.width;
+            textCustomPlacement.y = (e.clientY - rect.top) / rect.height;
+            updateStatus(`Text position set to (${Math.round(textCustomPlacement.x * 100)}%, ${Math.round(textCustomPlacement.y * 100)}%).`);
+        }
+    });
+
+    addTextBtn.addEventListener("click", function () {
+        if (!hasImage) return;
+        const text = textInput.value.trim();
+        if (!text) {
+            alert("Please enter some text first.");
+            textInput.focus();
+            return;
+        }
+
+        const size = Math.max(10, parseInt(textSizeInput.value, 10) || 48);
+        const font = fontFamilySelect.value;
+        const color = textColorPicker.value;
+        const isBold = textBoldCheckbox.checked;
+        const isItalic = textItalicCheckbox.checked;
+        const hasOutline = textShadowCheckbox.checked;
+        const posPreset = textPositionPreset.value;
+
+        baseCtx.save();
+
+        const fontStyle = `${isItalic ? "italic " : ""}${isBold ? "bold " : ""}${size}px ${font}`;
+        baseCtx.font = fontStyle;
+        baseCtx.textAlign = "center";
+        baseCtx.textBaseline = "middle";
+
+        let posX = baseCanvas.width / 2;
+        let posY = baseCanvas.height / 2;
+
+        if (posPreset === "top") {
+            posY = size * 1.5;
+        } else if (posPreset === "bottom") {
+            posY = baseCanvas.height - (size * 1.5);
+        } else if (posPreset === "custom") {
+            posX = baseCanvas.width * textCustomPlacement.x;
+            posY = baseCanvas.height * textCustomPlacement.y;
+        }
+
+        if (hasOutline) {
+            baseCtx.lineWidth = Math.max(2, Math.round(size / 10));
+            baseCtx.strokeStyle = color === "#000000" ? "#ffffff" : "#000000";
+            baseCtx.strokeText(text, posX, posY);
+        }
+
+        baseCtx.fillStyle = color;
+        baseCtx.fillText(text, posX, posY);
+        baseCtx.restore();
+
+        pushHistory(`Added text "${text.substring(0, 15)}..."`);
+        renderDisplay();
+        textInput.value = "";
+    });
+
+    // ==========================================
+    // EXPORT & DOWNLOAD
+    // ==========================================
+    exportFormatSelect.addEventListener("change", function () {
+        qualityControlRow.style.display = (this.value === "image/png") ? "none" : "flex";
+    });
+
+    exportQualityRange.addEventListener("input", function () {
+        valQuality.textContent = `${this.value}%`;
+    });
+
+    function getExportCanvas() {
+        const outCanvas = document.createElement("canvas");
+        outCanvas.width = baseCanvas.width;
+        outCanvas.height = baseCanvas.height;
+        const oCtx = outCanvas.getContext("2d");
+
+        const format = exportFormatSelect.value;
+
+        // If JPEG, fill white background for transparency
+        if (format === "image/jpeg") {
+            oCtx.fillStyle = "#ffffff";
+            oCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+        }
+
+        oCtx.filter = getCssFilterString();
+        oCtx.drawImage(baseCanvas, 0, 0);
+        oCtx.filter = "none";
+
+        return outCanvas;
+    }
+
+    function downloadExport() {
+        if (!hasImage) return;
+
+        const outCanvas = getExportCanvas();
+        const format = exportFormatSelect.value;
+        const quality = parseInt(exportQualityRange.value, 10) / 100;
+
+        let filename = (exportFilenameInput.value.trim() || "makeitdoc-edited");
+        const ext = format === "image/png" ? ".png" : format === "image/webp" ? ".webp" : ".jpg";
+        if (!filename.toLowerCase().endsWith(ext)) {
+            filename += ext;
+        }
+
+        outCanvas.toBlob(function (blob) {
+            if (!blob) {
+                alert("Failed to export image.");
+                return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            updateStatus(`Downloaded ${filename} successfully!`);
+        }, format, quality);
+    }
+
+    topDownloadBtn.addEventListener("click", downloadExport);
+    exportDownloadBtn.addEventListener("click", downloadExport);
+
+    // Copy to Clipboard
+    copyClipboardBtn.addEventListener("click", function () {
+        if (!hasImage) return;
+        const outCanvas = getExportCanvas();
+        outCanvas.toBlob(function (blob) {
+            if (!blob) return;
+            try {
+                navigator.clipboard.write([
+                    new ClipboardItem({ "image/png": blob })
+                ]).then(() => {
+                    updateStatus("Copied image to clipboard!");
+                    alert("Image copied to clipboard!");
+                }).catch(() => {
+                    alert("Clipboard write not supported by browser permissions.");
+                });
+            } catch (err) {
+                alert("Direct clipboard copy is not supported in this browser.");
+            }
+        }, "image/png");
+    });
+
+    // Reset to Original
+    resetBtn.addEventListener("click", function () {
+        if (!hasImage || !originalImageSnapshot) return;
+        if (!confirm("Are you sure you want to discard all edits and reset to the original image?")) return;
+
+        baseCanvas.width = originalImageSnapshot.width;
+        baseCanvas.height = originalImageSnapshot.height;
+        baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+        baseCtx.drawImage(originalImageSnapshot, 0, 0);
+
+        resetAdjustments();
+        cancelCrop();
+        historyStack = [];
+        historyIndex = -1;
+        pushHistory("Reset to original");
+        renderDisplay();
+        fitToScreen();
+    });
+
+    // ==========================================
+    // SIDEBAR TAB SWITCHING
+    // ==========================================
+    document.querySelectorAll(".editor-tab-btn").forEach(tabBtn => {
+        tabBtn.addEventListener("click", function () {
+            document.querySelectorAll(".editor-tab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+
+            this.classList.add("active");
+            const targetPane = document.getElementById(this.dataset.tab);
+            if (targetPane) targetPane.classList.add("active");
+        });
+    });
+
+});
+</script>
+
+{% endblock %}

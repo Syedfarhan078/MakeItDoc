@@ -75,7 +75,7 @@
             <div class="sidebar-label">CREATIVE STUDIO</div>
 
             <nav class="sidebar-nav" aria-label="Creative tools">
-                <a href="{% url 'tool_page' 'image-editor' %}" class="nav-link">
+                <a href="{% url 'image_editor' %}" class="nav-link {% if request.resolver_match.url_name == 'image_editor' %}active{% endif %}">
                     <span class="nav-icon">▨</span>
                     <span>Image Editor</span>
                 </a>

@@ -11,6 +11,7 @@ urlpatterns = [
     path("tools/rotate-pdf/", views.rotate_pdf, name="rotate_pdf"),
     path("tools/compress-pdf/", views.compress_pdf, name="compress_pdf"),
     path("tools/protect-pdf/", views.protect_pdf, name="protect_pdf"),
+    path("tools/image-editor/", views.image_editor, name="image_editor"),
     path("tools/<slug:tool_slug>/", views.tool_page, name="tool_page"),
 
 ]
