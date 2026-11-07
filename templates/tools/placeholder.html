@@ -1,0 +1,47 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ tool.title }} — ToolNest{% endblock %}
+{% block breadcrumb %}{{ tool.title }}{% endblock %}
+
+{% block content %}
+<section class="placeholder-page">
+    <a href="{% url 'dashboard' %}" class="back-link">
+        ← Back to overview
+    </a>
+
+    <div class="placeholder-icon">
+        {% if tool.category == "PDF Tools" %}
+            ▤
+        {% elif tool.category == "Creative Tools" %}
+            ◩
+        {% else %}
+            ≡
+        {% endif %}
+    </div>
+
+    <div class="eyebrow">
+        <span class="eyebrow-line"></span>
+        {{ tool.category|upper }}
+    </div>
+
+    <h1>{{ tool.title }}</h1>
+    <p class="placeholder-description">{{ tool.description }}</p>
+
+    <div class="coming-soon">
+        <span class="status-dot"></span>
+        <span>Workspace prepared</span>
+    </div>
+
+    <div class="placeholder-panel">
+        <h2>This tool is being built.</h2>
+        <p>
+            The page is connected to ToolNest. Its functionality
+            will be added in a future development step.
+        </p>
+        <a href="{% url 'dashboard' %}" class="primary-button">
+            Explore other tools <span>↗</span>
+        </a>
+    </div>
+</section>
+{% endblock %}

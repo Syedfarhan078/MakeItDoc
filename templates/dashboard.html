@@ -1,0 +1,181 @@
+
+{% extends "base.html" %}
+
+{% block title %}Overview — ToolNest{% endblock %}
+{% block breadcrumb %}Overview{% endblock %}
+
+{% block content %}
+<section class="welcome-section">
+    <div class="eyebrow">
+        <span class="eyebrow-line"></span>
+        YOUR PERSONAL WORKSPACE
+    </div>
+
+    <h1>Everything you need.<br>
+        <span class="heading-muted">Nothing you don't.</span>
+    </h1>
+
+    <p class="welcome-description">
+        A calmer way to handle documents, capture ideas,
+        and get everyday tasks done.
+    </p>
+
+    <div class="search-wrapper">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+            type="search"
+            id="toolSearch"
+            placeholder="Search tools, e.g. merge PDF..."
+            autocomplete="off"
+            aria-label="Search tools"
+            aria-describedby="searchStatus"
+        >
+        <kbd>SEARCH</kbd>
+    </div>
+    <p class="search-status" id="searchStatus" aria-live="polite"></p>
+</section>
+
+<section class="tool-section" id="pdf-tools">
+    <div class="section-heading">
+        <div>
+            <div class="section-kicker">01 / DOCUMENTS</div>
+            <h2>PDF workspace</h2>
+            <p class="section-description">
+                Your everyday document utilities, together in one place.
+            </p>
+        </div>
+        <span class="section-count">06 TOOLS</span>
+    </div>
+
+    <div class="tool-grid">
+        <a href="{% url 'tool_page' 'merge-pdf' %}"
+           class="tool-card"
+           data-tool="merge pdf combine join documents files">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-lavender">⇄</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>Merge PDF</h3>
+            <p>Combine multiple documents into one PDF.</p>
+            <span class="card-category">PDF MANAGEMENT</span>
+        </a>
+
+        <a href="{% url 'tool_page' 'split-pdf' %}"
+           class="tool-card"
+           data-tool="split pdf extract pages separate">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-blue">⫶</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>Split PDF</h3>
+            <p>Extract the pages you actually need.</p>
+            <span class="card-category">PDF MANAGEMENT</span>
+        </a>
+
+        <a href="{% url 'image_to_pdf' %}"
+           class="tool-card"
+           data-tool="image to pdf jpg jpeg png photos pictures">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-green">▣</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>Image to PDF</h3>
+            <p>Turn your images into a single document.</p>
+            <span class="card-category">CONVERSION</span>
+        </a>
+
+        <a href="{% url 'word_to_pdf' %}"
+           class="tool-card"
+           data-tool="word doc docx to pdf convert document">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-orange">W</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>Word to PDF</h3>
+            <p>Convert Word documents into PDF files.</p>
+            <span class="card-category">CONVERSION</span>
+        </a>
+
+        <a href="{% url 'pdf_to_word' %}"
+           class="tool-card"
+           data-tool="pdf to word docx editable convert document">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-pink">W↗</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>PDF to Word</h3>
+            <p>Turn PDF content into an editable document.</p>
+            <span class="card-category">CONVERSION</span>
+        </a>
+
+        <a href="{% url 'tool_page' 'rotate-pdf' %}"
+           class="tool-card"
+           data-tool="rotate pdf turn pages orientation">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-yellow">⟳</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>Rotate PDF</h3>
+            <p>Correct page orientation in a few steps.</p>
+            <span class="card-category">PDF MANAGEMENT</span>
+        </a>
+    </div>
+</section>
+
+<section class="tool-section secondary-section" id="other-tools">
+    <div class="section-heading">
+        <div>
+            <div class="section-kicker">02 / EVERYDAY WORK</div>
+            <h2>More ways to create</h2>
+            <p class="section-description">
+                A little space for notes, images, and ideas.
+            </p>
+        </div>
+        <span class="section-count">03 TOOLS</span>
+    </div>
+
+    <div class="tool-grid">
+        <a href="{% url 'tool_page' 'notes' %}"
+           class="tool-card"
+           data-tool="notes notepad text editor writing">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-green">≡</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>Quick Notes</h3>
+            <p>Get ideas out of your head and onto the page.</p>
+            <span class="card-category">PRODUCTIVITY</span>
+        </a>
+
+        <a href="{% url 'tool_page' 'image-editor' %}"
+           class="tool-card"
+           data-tool="image editor add text photo crop resize">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-lavender">◩</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>Image Editor</h3>
+            <p>Add text and make quick image adjustments.</p>
+            <span class="card-category">CREATIVE</span>
+        </a>
+
+        <a href="{% url 'tool_page' 'collage-maker' %}"
+           class="tool-card"
+           data-tool="collage maker photos grid picture layout">
+            <div class="tool-card-top">
+                <span class="tool-icon icon-orange">▦</span>
+                <span class="card-arrow">↗</span>
+            </div>
+            <h3>Collage Maker</h3>
+            <p>Bring your favorite photos together.</p>
+            <span class="card-category">CREATIVE</span>
+        </a>
+    </div>
+</section>
+
+<div class="empty-search" id="emptySearch" hidden>
+    <span class="empty-search-icon">⌕</span>
+    <h3>No matching tools</h3>
+    <p>Try a different search term.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Word to PDF — ToolNest{% endblock %}
+{% block breadcrumb %}Word to PDF{% endblock %}
+
+{% block content %}
+
+<style>
+    .word-tool {
+        max-width: 760px;
+        margin: 20px auto;
+    }
+
+    .word-heading {
+        margin-bottom: 28px;
+    }
+
+    .word-heading h1 {
+        font-size: 30px;
+        margin-bottom: 10px;
+    }
+
+    .word-heading p {
+        color: var(--text-muted, #9298a5);
+        line-height: 1.7;
+    }
+
+    .word-panel {
+        padding: 30px;
+        border: 1px solid var(--border, #292d38);
+        border-radius: 16px;
+        background: var(--surface, #141720);
+    }
+
+    .word-dropzone {
+        display: block;
+        padding: 45px 20px;
+        text-align: center;
+        border: 1px dashed #555d70;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .word-dropzone:hover {
+        border-color: #8b91ff;
+        background: rgba(139, 145, 255, 0.05);
+    }
+
+    .word-icon {
+        font-size: 38px;
+        margin-bottom: 14px;
+    }
+
+    .word-dropzone strong {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .word-dropzone p {
+        color: var(--text-muted, #9298a5);
+        font-size: 13px;
+    }
+
+    .word-file-input {
+        display: none;
+    }
+
+    .word-file-name {
+        margin-top: 16px;
+        font-size: 14px;
+        color: #a5aaff;
+        overflow-wrap: anywhere;
+    }
+
+    .word-error {
+        margin-bottom: 18px;
+        padding: 13px 16px;
+        border-radius: 9px;
+        background: rgba(220, 70, 70, 0.12);
+        border: 1px solid rgba(220, 70, 70, 0.35);
+        color: #ff9999;
+        font-size: 14px;
+    }
+
+    .word-submit {
+        width: 100%;
+        margin-top: 22px;
+        padding: 14px;
+        border: none;
+        border-radius: 9px;
+        background: #858bff;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .word-submit:hover {
+        background: #737aff;
+    }
+
+    .word-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .word-info {
+        margin-top: 20px;
+        color: var(--text-muted, #9298a5);
+        font-size: 13px;
+        line-height: 1.7;
+    }
+</style>
+
+<section class="word-tool">
+
+    <div class="word-heading">
+        <div class="eyebrow">
+            <span class="eyebrow-line"></span>
+            DOCUMENT CONVERSION
+        </div>
+
+        <h1>Word to PDF</h1>
+
+        <p>
+            Convert your Word documents into PDF files while
+            preserving their original layout and formatting.
+        </p>
+    </div>
+
+    <div class="word-panel">
+
+        {% if error %}
+            <div class="word-error" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+            id="wordForm"
+        >
+            {% csrf_token %}
+
+            <label for="wordFile" class="word-dropzone">
+
+                <div class="word-icon">W</div>
+
+                <strong>Choose a Word document</strong>
+
+                <p>
+                    Click here to browse your files
+                </p>
+
+                <p>
+                    Supported format: DOCX · Maximum size: 20 MB
+                </p>
+
+                <input
+                    type="file"
+                    name="document"
+                    id="wordFile"
+                    class="word-file-input"
+                    accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    required
+                >
+
+            </label>
+
+            <div
+                class="word-file-name"
+                id="wordFileName"
+                aria-live="polite"
+            ></div>
+
+            <button
+                type="submit"
+                class="word-submit"
+                id="wordSubmit"
+            >
+                Convert to PDF
+            </button>
+
+        </form>
+
+        <div class="word-info">
+            <p>• Only DOCX documents are currently supported.</p>
+            <p>• Your document is processed temporarily for conversion.</p>
+            <p>• Your converted PDF will download automatically.</p>
+        </div>
+
+    </div>
+
+</section>
+
+<script>
+    const wordFile = document.getElementById("wordFile");
+    const wordFileName = document.getElementById("wordFileName");
+    const wordForm = document.getElementById("wordForm");
+    const wordSubmit = document.getElementById("wordSubmit");
+
+    wordFile.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (!file) {
+            wordFileName.textContent = "";
+            return;
+        }
+
+        if (!file.name.toLowerCase().endsWith(".docx")) {
+            wordFileName.textContent = "Please select a DOCX file.";
+            this.value = "";
+            return;
+        }
+
+        if (file.size > 20 * 1024 * 1024) {
+            wordFileName.textContent = "File size must not exceed 20 MB.";
+            this.value = "";
+            return;
+        }
+
+        wordFileName.textContent = file.name;
+    });
+
+    wordForm.addEventListener("submit", function () {
+        wordSubmit.disabled = true;
+        wordSubmit.textContent = "Converting document...";
+    });
+</script>
+
+{% endblock %}

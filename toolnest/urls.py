@@ -1,0 +1,11 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.dashboard, name="dashboard"),
+    path("tools/image-to-pdf/", views.image_to_pdf, name="image_to_pdf"),
+    path("tools/word-to-pdf/", views.word_to_pdf, name="word_to_pdf"),
+    path("tools/pdf-to-word/", views.pdf_to_word, name="pdf_to_word"),
+    path("tools/<slug:tool_slug>/", views.tool_page, name="tool_page"),
+
+]

@@ -1,0 +1,148 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0d12" id="themeColorMeta">
+    <meta name="description" content="ToolNest — your personal productivity toolkit.">
+    <title>{% block title %}ToolNest{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/main.js' %}" defer></script>
+    {% block extra_scripts %}{% endblock %}
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <a href="{% url 'dashboard' %}" class="brand">
+                <span class="brand-mark">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="3" y="3" width="8" height="8" rx="2"/>
+                        <rect x="13" y="3" width="8" height="8" rx="2"/>
+                        <rect x="3" y="13" width="8" height="8" rx="2"/>
+                        <rect x="13" y="13" width="8" height="8" rx="2"/>
+                    </svg>
+                </span>
+                <span class="brand-name">ToolNest</span>
+            </a>
+
+            <div class="sidebar-label">WORKSPACE</div>
+
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a href="{% url 'dashboard' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <span class="nav-icon">⌂</span>
+                    <span>Overview</span>
+                </a>
+                <a href="{% url 'tool_page' 'notes' %}" class="nav-link">
+                    <span class="nav-icon">▤</span>
+                    <span>Quick Notes</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-label">PDF TOOLS</div>
+
+                <nav class="sidebar-nav" aria-label="PDF tools">
+
+                    <a href="{% url 'tool_page' 'merge-pdf' %}" class="nav-link">
+                        <span class="nav-icon">▧</span>
+                        <span>Merge PDF</span>
+                    </a>
+
+                    <a href="{% url 'tool_page' 'split-pdf' %}" class="nav-link">
+                        <span class="nav-icon">⫶</span>
+                        <span>Split PDF</span>
+                    </a>
+
+                    <a href="{% url 'image_to_pdf' %}" class="nav-link">
+                        <span class="nav-icon">▣</span>
+                        <span>Image to PDF</span>
+                    </a>
+
+                    <a href="{% url 'word_to_pdf' %}" class="nav-link">
+                        <span class="nav-icon">⇩</span>
+                        <span>Word to PDF</span>
+                    </a>
+
+                    <a href="{% url 'pdf_to_word' %}" class="nav-link">
+                        <span class="nav-icon">⇧</span>
+                        <span>PDF to Word</span>
+                    </a>
+
+            </nav>
+
+            <div class="sidebar-label">CREATIVE STUDIO</div>
+
+            <nav class="sidebar-nav" aria-label="Creative tools">
+                <a href="{% url 'tool_page' 'image-editor' %}" class="nav-link">
+                    <span class="nav-icon">▨</span>
+                    <span>Image Editor</span>
+                </a>
+                <a href="{% url 'tool_page' 'collage-maker' %}" class="nav-link">
+                    <span class="nav-icon">▦</span>
+                    <span>Collage Maker</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="privacy-note">
+                    <span class="privacy-dot"></span>
+                    <div>
+                        <strong>Your workspace</strong>
+                        <p>Simple tools. Less clutter.</p>
+                    </div>
+                </div>
+                <div class="sidebar-version">TOOLNEST · PERSONAL EDITION</div>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <button class="icon-button menu-toggle"
+                        id="menuToggle"
+                        type="button"
+                        aria-label="Toggle navigation"
+                        aria-controls="sidebar"
+                        aria-expanded="false">
+                    <span>☰</span>
+                </button>
+
+                <div class="breadcrumb">
+                    <span>ToolNest</span>
+                    <span class="breadcrumb-divider">/</span>
+                    <span class="breadcrumb-current">
+                        {% block breadcrumb %}Overview{% endblock %}
+                    </span>
+                </div>
+
+                <div class="topbar-right">
+
+    <button
+        class="theme-toggle"
+        id="themeToggle"
+        type="button"
+        aria-label="Switch to light mode"
+        title="Switch theme"
+    >
+        <span class="theme-toggle-icon" id="themeIcon">☀</span>
+        <span class="theme-toggle-label" id="themeLabel">Light mode</span>
+    </button>
+
+    <div class="avatar" aria-label="Personal workspace">T</div>
+
+</div>
+            </header>
+
+            <main class="page-content">
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer class="site-footer">
+                <span>ToolNest</span>
+                <span>Built for your everyday workflow.</span>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>
