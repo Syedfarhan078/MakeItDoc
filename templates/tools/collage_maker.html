@@ -1,0 +1,1794 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Collage Maker — MakeitDoc{% endblock %}
+{% block breadcrumb %}Collage Maker{% endblock %}
+
+{% block content %}
+
+<style>
+    /* =========================================================
+       COLLAGE MAKER STYLES - MAKEITDOC DESIGN SYSTEM
+       ========================================================= */
+
+    .collage-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* Header */
+    .collage-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .collage-header-text h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .collage-badge {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: rgba(183, 247, 212, 0.12);
+        color: var(--accent);
+        border: 1px solid rgba(183, 247, 212, 0.25);
+    }
+
+    :root[data-theme="light"] .collage-badge {
+        background: #e5f4eb;
+        color: #25845b;
+        border-color: #cce8d7;
+    }
+
+    .collage-header-text p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    /* Layout */
+    .collage-main-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 20px;
+        align-items: stretch;
+    }
+
+    @media (max-width: 1040px) {
+        .collage-main-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Workspace Card */
+    .collage-workspace-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        min-height: 640px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Top Command Toolbar */
+    .collage-top-toolbar {
+        padding: 12px 18px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .collage-btn-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .collage-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface-hover);
+        color: var(--text);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    .collage-btn:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-1px);
+    }
+
+    .collage-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .collage-btn.btn-accent {
+        background: var(--accent);
+        color: var(--accent-ink);
+        border-color: var(--accent);
+        font-weight: 600;
+    }
+
+    .collage-btn.btn-accent:hover:not(:disabled) {
+        opacity: 0.92;
+        color: var(--accent-ink);
+        box-shadow: 0 2px 12px rgba(183, 247, 212, 0.25);
+    }
+
+    /* Viewport Area */
+    .collage-viewport {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+        padding: 24px;
+        min-height: 480px;
+        background-color: #141720;
+        background-image:
+            linear-gradient(45deg, #1b202c 25%, transparent 25%),
+            linear-gradient(-45deg, #1b202c 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #1b202c 75%),
+            linear-gradient(-45deg, transparent 75%, #1b202c 75%);
+        background-size: 24px 24px;
+        background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+        outline: none;
+    }
+
+    :root[data-theme="light"] .collage-viewport {
+        background-color: #f0f2f6;
+        background-image:
+            linear-gradient(45deg, #e4e7ed 25%, transparent 25%),
+            linear-gradient(-45deg, #e4e7ed 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #e4e7ed 75%),
+            linear-gradient(-45deg, transparent 75%, #e4e7ed 75%);
+    }
+
+    /* Empty Dropzone */
+    .collage-empty-dropzone {
+        max-width: 480px;
+        width: 100%;
+        padding: 50px 30px;
+        text-align: center;
+        border: 2px dashed var(--border);
+        border-radius: 16px;
+        background: rgba(18, 21, 29, 0.7);
+        backdrop-filter: blur(8px);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    :root[data-theme="light"] .collage-empty-dropzone {
+        background: rgba(255, 255, 255, 0.85);
+    }
+
+    .collage-empty-dropzone.dragover,
+    .collage-empty-dropzone:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .collage-drop-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 16px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        background: rgba(183, 247, 212, 0.12);
+        color: var(--accent);
+        border: 1px solid rgba(183, 247, 212, 0.2);
+    }
+
+    .collage-empty-dropzone h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        color: var(--text);
+    }
+
+    .collage-empty-dropzone p {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 20px 0;
+        line-height: 1.5;
+    }
+
+    .collage-drop-hints {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 11px;
+        color: var(--subtle);
+    }
+
+    .collage-pill {
+        padding: 3px 8px;
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+    }
+
+    /* Collage Stage Wrapper */
+    .collage-canvas-stage {
+        position: relative;
+        display: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+        border-radius: 4px;
+        overflow: hidden;
+        line-height: 0;
+        user-select: none;
+    }
+
+    #collageCanvas {
+        display: block;
+        max-width: 100%;
+        max-height: 70vh;
+        width: auto;
+        height: auto;
+    }
+
+    /* Selected Cell Floating Quick Actions */
+    .cell-action-bar {
+        position: absolute;
+        display: none;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        z-index: 50;
+        gap: 4px;
+    }
+
+    .cell-action-bar button {
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 5px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: 0.15s;
+    }
+
+    .cell-action-bar button:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    /* Status Bar */
+    .collage-status-bar {
+        padding: 10px 18px;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--muted);
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .collage-status-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .collage-status-meta span strong {
+        color: var(--text);
+    }
+
+    /* Sidebar */
+    .collage-sidebar {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Tabs */
+    .collage-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        padding: 6px 8px 0;
+        gap: 4px;
+        overflow-x: auto;
+    }
+
+    .collage-tab-btn {
+        flex: 1;
+        min-width: 60px;
+        padding: 10px 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .collage-tab-btn:hover {
+        color: var(--text);
+    }
+
+    .collage-tab-btn.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+    }
+
+    .collage-tab-content {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+        max-height: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .tab-pane {
+        display: none;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .tab-pane.active {
+        display: flex;
+    }
+
+    .tool-group-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--subtle);
+        margin: 0 0 12px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .control-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .control-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .control-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+    }
+
+    .control-header label {
+        color: var(--text);
+        font-weight: 500;
+    }
+
+    .control-header .value-tag {
+        color: var(--muted);
+        font-family: monospace;
+        font-size: 12px;
+    }
+
+    .collage-range {
+        width: 100%;
+        accent-color: var(--accent);
+        cursor: pointer;
+        height: 5px;
+        background: var(--surface-hover);
+        border-radius: 4px;
+    }
+
+    .collage-input,
+    .collage-select {
+        width: 100%;
+        padding: 9px 12px;
+        font-size: 13px;
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.15s;
+    }
+
+    .collage-input:focus,
+    .collage-select:focus {
+        border-color: var(--accent);
+    }
+
+    .btn-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .btn-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    /* Layout Grid Selector Thumbnails */
+    .layout-filter-pills {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+    }
+
+    .layout-filter-pill {
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: 0.15s;
+    }
+
+    .layout-filter-pill.active {
+        background: rgba(183, 247, 212, 0.12);
+        color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .layout-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        max-height: 280px;
+        overflow-y: auto;
+        padding: 4px;
+    }
+
+    .layout-card {
+        background: var(--surface-hover);
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        aspect-ratio: 1;
+        cursor: pointer;
+        padding: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: all 0.15s;
+    }
+
+    .layout-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+    }
+
+    .layout-card.active {
+        border-color: var(--accent);
+        background: rgba(183, 247, 212, 0.08);
+        box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .layout-preview-box {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .layout-cell-preview {
+        position: absolute;
+        background: rgba(183, 247, 212, 0.35);
+        border: 1px solid rgba(183, 247, 212, 0.7);
+        border-radius: 2px;
+    }
+
+    :root[data-theme="light"] .layout-cell-preview {
+        background: rgba(37, 132, 91, 0.25);
+        border-color: rgba(37, 132, 91, 0.6);
+    }
+
+    /* Color Swatches */
+    .color-swatches-grid {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .color-circle {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        cursor: pointer;
+        transition: transform 0.15s;
+        padding: 0;
+    }
+
+    .color-circle:hover {
+        transform: scale(1.15);
+    }
+
+    .color-circle.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px var(--surface);
+    }
+
+    .color-circle-native {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: none;
+        cursor: pointer;
+    }
+
+    /* Selected Cell Control Panel */
+    .selected-cell-panel {
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+        margin-top: 10px;
+        display: none;
+    }
+
+    #photoBatchInput, #singleCellInput {
+        display: none;
+    }
+</style>
+
+<div class="collage-container">
+
+    <!-- Header -->
+    <div class="collage-header">
+        <div class="collage-header-text">
+            <h1>Collage Maker <span class="collage-badge">Studio</span></h1>
+            <p>Combine multiple photos into sleek custom photo collages with customizable layouts and spacing.</p>
+        </div>
+        <div class="collage-btn-group">
+            <button type="button" class="collage-btn" id="clearAllBtn" disabled>
+                ✕ Clear All
+            </button>
+            <button type="button" class="collage-btn" id="shuffleBtn" disabled title="Shuffle photo positions">
+                🔀 Shuffle Photos
+            </button>
+            <button type="button" class="collage-btn btn-accent" id="topDownloadBtn" disabled>
+                ↓ Export Collage
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="collage-main-layout">
+
+        <!-- Left: Workspace -->
+        <div class="collage-workspace-card">
+
+            <!-- Toolbar -->
+            <div class="collage-top-toolbar">
+                <div class="collage-btn-group">
+                    <button type="button" class="collage-btn btn-accent" id="addPhotosBtn">
+                        <span>+ Add Photos</span>
+                    </button>
+                    <input type="file" id="photoBatchInput" multiple accept="image/jpeg,image/png,image/webp">
+                    <input type="file" id="singleCellInput" accept="image/jpeg,image/png,image/webp">
+                </div>
+
+                <div class="collage-btn-group">
+                    <button type="button" class="collage-btn" id="zoomOutBtn" disabled title="Zoom Out">−</button>
+                    <span id="zoomLevelLabel" style="font-size: 12px; font-weight: 600; min-width: 44px; text-align: center; color: var(--muted);">100%</span>
+                    <button type="button" class="collage-btn" id="zoomInBtn" disabled title="Zoom In">+</button>
+                    <button type="button" class="collage-btn" id="fitZoomBtn" disabled title="Fit to viewport">Fit</button>
+                </div>
+            </div>
+
+            <!-- Viewport -->
+            <div class="collage-viewport" id="viewport">
+
+                <!-- Empty State Dropzone -->
+                <div class="collage-empty-dropzone" id="dropzone">
+                    <div class="collage-drop-icon">▦</div>
+                    <h3>Drop your photos here</h3>
+                    <p>Select 2 to 9 photos or click to browse. You can also paste screenshots directly with <strong>Ctrl+V</strong>.</p>
+                    <div class="collage-drop-hints">
+                        <span class="collage-pill">Multiple Photos</span>
+                        <span class="collage-pill">JPG / PNG / WebP</span>
+                        <span class="collage-pill">Drag & Drop Slots</span>
+                    </div>
+                </div>
+
+                <!-- Canvas Stage -->
+                <div class="collage-canvas-stage" id="canvasStage">
+                    <canvas id="collageCanvas"></canvas>
+                </div>
+
+            </div>
+
+            <!-- Bottom Status Bar -->
+            <div class="collage-status-bar">
+                <div class="collage-status-meta">
+                    <span id="photosCountMeta">Photos: <strong>0</strong></span>
+                    <span id="layoutNameMeta">Layout: <strong>2x2 Grid</strong></span>
+                    <span id="resolutionMeta">Output: <strong>1200 × 1200 px</strong></span>
+                </div>
+                <div id="statusMessage">No photos loaded yet.</div>
+            </div>
+
+        </div>
+
+        <!-- Right: Sidebar Controls -->
+        <aside class="collage-sidebar">
+
+            <!-- Tab Buttons -->
+            <div class="collage-tabs">
+                <button type="button" class="collage-tab-btn active" data-tab="tabLayout">Layout</button>
+                <button type="button" class="collage-tab-btn" data-tab="tabStyle">Style</button>
+                <button type="button" class="collage-tab-btn" data-tab="tabCell">Photo</button>
+                <button type="button" class="collage-tab-btn" data-tab="tabCaption">Text</button>
+                <button type="button" class="collage-tab-btn" data-tab="tabExport">Export</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="collage-tab-content">
+
+                <!-- 1. LAYOUTS TAB -->
+                <div class="tab-pane active" id="tabLayout">
+
+                    <div>
+                        <div class="tool-group-title">
+                            <span>Filter by Photo Count</span>
+                        </div>
+                        <div class="layout-filter-pills">
+                            <button type="button" class="layout-filter-pill active" data-filter="all">All</button>
+                            <button type="button" class="layout-filter-pill" data-filter="2">2</button>
+                            <button type="button" class="layout-filter-pill" data-filter="3">3</button>
+                            <button type="button" class="layout-filter-pill" data-filter="4">4</button>
+                            <button type="button" class="layout-filter-pill" data-filter="5">5</button>
+                            <button type="button" class="layout-filter-pill" data-filter="6">6</button>
+                            <button type="button" class="layout-filter-pill" data-filter="7-9">7-9</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="tool-group-title">
+                            <span>Choose Template</span>
+                        </div>
+                        <div class="layout-cards-grid" id="layoutCardsGrid">
+                            <!-- Injected dynamically via JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 2. STYLE TAB -->
+                <div class="tab-pane" id="tabStyle">
+
+                    <div class="control-row">
+                        <label class="control-header" for="canvasRatioSelect">
+                            <span>Collage Aspect Ratio</span>
+                        </label>
+                        <select class="collage-select" id="canvasRatioSelect">
+                            <option value="1:1">1:1 Square (Instagram Feed)</option>
+                            <option value="4:5">4:5 Portrait (Social Post)</option>
+                            <option value="9:16">9:16 Vertical (Stories / TikTok)</option>
+                            <option value="16:9">16:9 Landscape (Widescreen)</option>
+                            <option value="4:3">4:3 Standard</option>
+                            <option value="3:2">3:2 Classic Photo</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-header">
+                            <label for="spacingRange">Cell Spacing (Gap)</label>
+                            <span class="value-tag" id="valSpacing">12px</span>
+                        </div>
+                        <input type="range" class="collage-range" id="spacingRange" min="0" max="40" value="12">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-header">
+                            <label for="radiusRange">Corner Radius</label>
+                            <span class="value-tag" id="valRadius">10px</span>
+                        </div>
+                        <input type="range" class="collage-range" id="radiusRange" min="0" max="40" value="10">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-header">
+                            <label for="paddingRange">Outer Margin</label>
+                            <span class="value-tag" id="valPadding">12px</span>
+                        </div>
+                        <input type="range" class="collage-range" id="paddingRange" min="0" max="50" value="12">
+                    </div>
+
+                    <div class="control-row">
+                        <label class="control-header">Background Color</label>
+                        <div class="color-swatches-grid">
+                            <button type="button" class="color-circle active" style="background: #ffffff;" data-color="#ffffff" title="White"></button>
+                            <button type="button" class="color-circle" style="background: #12151d;" data-color="#12151d" title="Dark Slate"></button>
+                            <button type="button" class="color-circle" style="background: #000000;" data-color="#000000" title="Pitch Black"></button>
+                            <button type="button" class="color-circle" style="background: #faf8f5;" data-color="#faf8f5" title="Warm Cream"></button>
+                            <button type="button" class="color-circle" style="background: #fdf2f4;" data-color="#fdf2f4" title="Pastel Rose"></button>
+                            <button type="button" class="color-circle" style="background: #ecfdf5;" data-color="#ecfdf5" title="Soft Mint"></button>
+                            <button type="button" class="color-circle" style="background: #b7f7d4;" data-color="#b7f7d4" title="MakeitDoc Accent"></button>
+                            <input type="color" class="color-circle-native" id="bgColorNative" value="#ffffff" title="Custom color">
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <label class="control-header" for="filterSelect">
+                            <span>Collage Filter Tone</span>
+                        </label>
+                        <select class="collage-select" id="filterSelect">
+                            <option value="none">Normal (Original Colors)</option>
+                            <option value="vivid">Vivid & Saturated</option>
+                            <option value="bw">Black & White (Monochrome)</option>
+                            <option value="sepia">Vintage Sepia</option>
+                            <option value="warm">Warm Sunlight</option>
+                            <option value="cool">Cool Tone</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- 3. PHOTO / CELL ADJUSTMENT TAB -->
+                <div class="tab-pane" id="tabCell">
+
+                    <div id="noCellNotice" style="text-align: center; padding: 30px 10px; color: var(--muted); font-size: 13px;">
+                        <p style="margin-bottom: 8px;">👉 <strong>Click any photo</strong> in the collage to select and customize it.</p>
+                        <span style="font-size: 11px; color: var(--subtle);">You can drag photos inside cells to reposition them.</span>
+                    </div>
+
+                    <div id="cellControlsWrap" style="display: none;">
+
+                        <div class="tool-group-title">
+                            <span id="selectedCellHeader">Selected Cell #1</span>
+                            <button type="button" id="removePhotoBtn" style="color: #ff5555; background: none; border: none; cursor: pointer; font-size: 11px;">🗑 Remove</button>
+                        </div>
+
+                        <div class="btn-grid-2">
+                            <button type="button" class="collage-btn" id="replacePhotoBtn">
+                                🔄 Replace
+                            </button>
+                            <button type="button" class="collage-btn" id="rotateCellBtn">
+                                ↷ Rotate 90°
+                            </button>
+                        </div>
+
+                        <div class="btn-grid-2" style="margin-top: 8px;">
+                            <button type="button" class="collage-btn" id="flipHCellBtn">
+                                ⇄ Flip H
+                            </button>
+                            <button type="button" class="collage-btn" id="resetCellBtn">
+                                Reset Cell
+                            </button>
+                        </div>
+
+                        <div class="control-row" style="margin-top: 14px;">
+                            <div class="control-header">
+                                <label for="cellZoomRange">Zoom Inside Slot</label>
+                                <span class="value-tag" id="valCellZoom">1.0x</span>
+                            </div>
+                            <input type="range" class="collage-range" id="cellZoomRange" min="1.0" max="3.0" step="0.05" value="1.0">
+                        </div>
+
+                        <p style="font-size: 11px; color: var(--subtle); line-height: 1.5; margin-top: 6px;">
+                            💡 <strong>Tip:</strong> Click & drag directly on the photo inside the canvas to reposition its center point.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- 4. CAPTION / TEXT TAB -->
+                <div class="tab-pane" id="tabCaption">
+
+                    <div class="control-row">
+                        <label class="control-header" for="captionTextInput">Collage Title / Caption</label>
+                        <input type="text" class="collage-input" id="captionTextInput" placeholder="e.g. Memories 2026..." maxlength="80">
+                    </div>
+
+                    <div class="btn-grid-2">
+                        <div class="control-row">
+                            <label class="control-header" for="captionFontSelect">Font</label>
+                            <select class="collage-select" id="captionFontSelect">
+                                <option value="DM Sans, sans-serif">DM Sans</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="Impact, fantasy">Impact</option>
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label class="control-header" for="captionSizeInput">Size</label>
+                            <input type="number" class="collage-input" id="captionSizeInput" value="36" min="14" max="120">
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <label class="control-header" for="captionPosSelect">Position</label>
+                        <select class="collage-select" id="captionPosSelect">
+                            <option value="none">None (No text)</option>
+                            <option value="top">Top Header</option>
+                            <option value="bottom">Bottom Footer</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row">
+                        <label class="control-header" for="captionColorPicker">Text Color</label>
+                        <input type="color" class="color-circle-native" id="captionColorPicker" value="#222222">
+                    </div>
+
+                </div>
+
+                <!-- 5. EXPORT TAB -->
+                <div class="tab-pane" id="tabExport">
+
+                    <div class="control-row">
+                        <label class="control-header" for="exportFormat">Format</label>
+                        <select class="collage-select" id="exportFormat">
+                            <option value="image/png">PNG (Crisp & lossless)</option>
+                            <option value="image/jpeg">JPEG (Compact)</option>
+                            <option value="image/webp">WEBP (Modern web)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row">
+                        <label class="control-header" for="exportResolution">Output Resolution</label>
+                        <select class="collage-select" id="exportResolution">
+                            <option value="1200">Standard HD (1200px)</option>
+                            <option value="1920">Full HD (1920px)</option>
+                            <option value="2560">Ultra Quad HD (2560px)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row">
+                        <label class="control-header" for="exportFilename">File Name</label>
+                        <input type="text" class="collage-input" id="exportFilename" value="makeitdoc-collage">
+                    </div>
+
+                    <button type="button" class="collage-btn btn-accent" id="exportDownloadBtn" disabled style="width: 100%; margin-top: 10px; padding: 12px;">
+                        ↓ Download Collage
+                    </button>
+
+                    <button type="button" class="collage-btn" id="copyClipboardBtn" disabled style="width: 100%; margin-top: 8px;">
+                        📋 Copy to Clipboard
+                    </button>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ==========================================
+    // PREDEFINED COLLAGE TEMPLATES (Normalized [x, y, w, h])
+    // ==========================================
+    const TEMPLATES = [
+        // 2 Photos
+        {
+            id: "2-vsplit", count: 2, name: "Side by Side",
+            cells: [{ x: 0, y: 0, w: 0.5, h: 1 }, { x: 0.5, y: 0, w: 0.5, h: 1 }]
+        },
+        {
+            id: "2-hsplit", count: 2, name: "Stacked",
+            cells: [{ x: 0, y: 0, w: 1, h: 0.5 }, { x: 0, y: 0.5, w: 1, h: 0.5 }]
+        },
+        // 3 Photos
+        {
+            id: "3-leftlarge", count: 3, name: "Featured Left",
+            cells: [{ x: 0, y: 0, w: 0.5, h: 1 }, { x: 0.5, y: 0, w: 0.5, h: 0.5 }, { x: 0.5, y: 0.5, w: 0.5, h: 0.5 }]
+        },
+        {
+            id: "3-toplarge", count: 3, name: "Featured Top",
+            cells: [{ x: 0, y: 0, w: 1, h: 0.5 }, { x: 0, y: 0.5, w: 0.5, h: 0.5 }, { x: 0.5, y: 0.5, w: 0.5, h: 0.5 }]
+        },
+        {
+            id: "3-cols", count: 3, name: "3 Columns",
+            cells: [{ x: 0, y: 0, w: 1/3, h: 1 }, { x: 1/3, y: 0, w: 1/3, h: 1 }, { x: 2/3, y: 0, w: 1/3, h: 1 }]
+        },
+        // 4 Photos
+        {
+            id: "4-quadrant", count: 4, name: "2x2 Classic",
+            cells: [
+                { x: 0, y: 0, w: 0.5, h: 0.5 }, { x: 0.5, y: 0, w: 0.5, h: 0.5 },
+                { x: 0, y: 0.5, w: 0.5, h: 0.5 }, { x: 0.5, y: 0.5, w: 0.5, h: 0.5 }
+            ]
+        },
+        {
+            id: "4-leftfeature", count: 4, name: "1 Main + 3 Stacked",
+            cells: [
+                { x: 0, y: 0, w: 0.6, h: 1 },
+                { x: 0.6, y: 0, w: 0.4, h: 1/3 },
+                { x: 0.6, y: 1/3, w: 0.4, h: 1/3 },
+                { x: 0.6, y: 2/3, w: 0.4, h: 1/3 }
+            ]
+        },
+        {
+            id: "4-topfeature", count: 4, name: "1 Main + 3 Bottom",
+            cells: [
+                { x: 0, y: 0, w: 1, h: 0.6 },
+                { x: 0, y: 0.6, w: 1/3, h: 0.4 },
+                { x: 1/3, y: 0.6, w: 1/3, h: 0.4 },
+                { x: 2/3, y: 0.6, w: 1/3, h: 0.4 }
+            ]
+        },
+        // 5 Photos
+        {
+            id: "5-grid", count: 5, name: "2 Top + 3 Bottom",
+            cells: [
+                { x: 0, y: 0, w: 0.5, h: 0.5 }, { x: 0.5, y: 0, w: 0.5, h: 0.5 },
+                { x: 0, y: 0.5, w: 1/3, h: 0.5 }, { x: 1/3, y: 0.5, w: 1/3, h: 0.5 }, { x: 2/3, y: 0.5, w: 1/3, h: 0.5 }
+            ]
+        },
+        {
+            id: "5-feature", count: 5, name: "Featured + 4 Grid",
+            cells: [
+                { x: 0, y: 0, w: 0.5, h: 1 },
+                { x: 0.5, y: 0, w: 0.25, h: 0.5 }, { x: 0.75, y: 0, w: 0.25, h: 0.5 },
+                { x: 0.5, y: 0.5, w: 0.25, h: 0.5 }, { x: 0.75, y: 0.5, w: 0.25, h: 0.5 }
+            ]
+        },
+        // 6 Photos
+        {
+            id: "6-grid3x2", count: 6, name: "3x2 Grid",
+            cells: [
+                { x: 0, y: 0, w: 1/3, h: 0.5 }, { x: 1/3, y: 0, w: 1/3, h: 0.5 }, { x: 2/3, y: 0, w: 1/3, h: 0.5 },
+                { x: 0, y: 0.5, w: 1/3, h: 0.5 }, { x: 1/3, y: 0.5, w: 1/3, h: 0.5 }, { x: 2/3, y: 0.5, w: 1/3, h: 0.5 }
+            ]
+        },
+        {
+            id: "6-grid2x3", count: 6, name: "2x3 Grid",
+            cells: [
+                { x: 0, y: 0, w: 0.5, h: 1/3 }, { x: 0.5, y: 0, w: 0.5, h: 1/3 },
+                { x: 0, y: 1/3, w: 0.5, h: 1/3 }, { x: 0.5, y: 1/3, w: 0.5, h: 1/3 },
+                { x: 0, y: 2/3, w: 0.5, h: 1/3 }, { x: 0.5, y: 2/3, w: 0.5, h: 1/3 }
+            ]
+        },
+        // 7-9 Photos
+        {
+            id: "9-grid3x3", count: 9, name: "3x3 Grid (9 Photos)",
+            cells: [
+                { x: 0, y: 0, w: 1/3, h: 1/3 }, { x: 1/3, y: 0, w: 1/3, h: 1/3 }, { x: 2/3, y: 0, w: 1/3, h: 1/3 },
+                { x: 0, y: 1/3, w: 1/3, h: 1/3 }, { x: 1/3, y: 1/3, w: 1/3, h: 1/3 }, { x: 2/3, y: 1/3, w: 1/3, h: 1/3 },
+                { x: 0, y: 2/3, w: 1/3, h: 1/3 }, { x: 1/3, y: 2/3, w: 1/3, h: 1/3 }, { x: 2/3, y: 2/3, w: 1/3, h: 1/3 }
+            ]
+        }
+    ];
+
+    // ==========================================
+    // DOM REFERENCES
+    // ==========================================
+    const viewport = document.getElementById("viewport");
+    const dropzone = document.getElementById("dropzone");
+    const canvasStage = document.getElementById("canvasStage");
+    const canvas = document.getElementById("collageCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const addPhotosBtn = document.getElementById("addPhotosBtn");
+    const photoBatchInput = document.getElementById("photoBatchInput");
+    const singleCellInput = document.getElementById("singleCellInput");
+
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    const shuffleBtn = document.getElementById("shuffleBtn");
+    const topDownloadBtn = document.getElementById("topDownloadBtn");
+    const exportDownloadBtn = document.getElementById("exportDownloadBtn");
+    const copyClipboardBtn = document.getElementById("copyClipboardBtn");
+
+    const zoomInBtn = document.getElementById("zoomInBtn");
+    const zoomOutBtn = document.getElementById("zoomOutBtn");
+    const fitZoomBtn = document.getElementById("fitZoomBtn");
+    const zoomLevelLabel = document.getElementById("zoomLevelLabel");
+
+    const photosCountMeta = document.getElementById("photosCountMeta");
+    const layoutNameMeta = document.getElementById("layoutNameMeta");
+    const resolutionMeta = document.getElementById("resolutionMeta");
+    const statusMsg = document.getElementById("statusMessage");
+
+    const layoutCardsGrid = document.getElementById("layoutCardsGrid");
+
+    const canvasRatioSelect = document.getElementById("canvasRatioSelect");
+    const spacingRange = document.getElementById("spacingRange");
+    const valSpacing = document.getElementById("valSpacing");
+    const radiusRange = document.getElementById("radiusRange");
+    const valRadius = document.getElementById("valRadius");
+    const paddingRange = document.getElementById("paddingRange");
+    const valPadding = document.getElementById("valPadding");
+    const filterSelect = document.getElementById("filterSelect");
+    const bgColorNative = document.getElementById("bgColorNative");
+
+    // Cell panel controls
+    const noCellNotice = document.getElementById("noCellNotice");
+    const cellControlsWrap = document.getElementById("cellControlsWrap");
+    const selectedCellHeader = document.getElementById("selectedCellHeader");
+    const replacePhotoBtn = document.getElementById("replacePhotoBtn");
+    const rotateCellBtn = document.getElementById("rotateCellBtn");
+    const flipHCellBtn = document.getElementById("flipHCellBtn");
+    const resetCellBtn = document.getElementById("resetCellBtn");
+    const removePhotoBtn = document.getElementById("removePhotoBtn");
+    const cellZoomRange = document.getElementById("cellZoomRange");
+    const valCellZoom = document.getElementById("valCellZoom");
+
+    // Caption controls
+    const captionTextInput = document.getElementById("captionTextInput");
+    const captionFontSelect = document.getElementById("captionFontSelect");
+    const captionSizeInput = document.getElementById("captionSizeInput");
+    const captionPosSelect = document.getElementById("captionPosSelect");
+    const captionColorPicker = document.getElementById("captionColorPicker");
+
+    // Export controls
+    const exportFormat = document.getElementById("exportFormat");
+    const exportResolution = document.getElementById("exportResolution");
+    const exportFilename = document.getElementById("exportFilename");
+
+    // ==========================================
+    // STATE
+    // ==========================================
+    let currentTemplate = TEMPLATES[5]; // Default: 4-quadrant (2x2)
+    let photos = []; // Array of Image objects (or null for empty slots)
+    let cellTransforms = []; // Per-cell: { panX, panY, zoom, rotate, flipH }
+    let selectedCellIndex = -1;
+    let currentZoom = 1.0;
+
+    // Styling config
+    let config = {
+        aspectRatio: "1:1",
+        spacing: 12,
+        radius: 10,
+        padding: 12,
+        bgColor: "#ffffff",
+        filter: "none"
+    };
+
+    // Cell Panning via Pointer Drag
+    let isDraggingCellPhoto = false;
+    let dragStartPointer = { x: 0, y: 0 };
+    let dragStartPan = { x: 0, y: 0 };
+
+    function updateStatus(msg) {
+        statusMsg.textContent = msg;
+    }
+
+    // ==========================================
+    // INITIALIZATION & TEMPLATE PICKER
+    // ==========================================
+    function renderLayoutThumbnails(filterCount = "all") {
+        layoutCardsGrid.innerHTML = "";
+
+        const filtered = TEMPLATES.filter(tpl => {
+            if (filterCount === "all") return true;
+            if (filterCount === "7-9") return tpl.count >= 7;
+            return tpl.count === Number(filterCount);
+        });
+
+        filtered.forEach(tpl => {
+            const card = document.createElement("div");
+            card.className = `layout-card ${tpl.id === currentTemplate.id ? "active" : ""}`;
+            card.title = `${tpl.name} (${tpl.count} photos)`;
+
+            const previewBox = document.createElement("div");
+            previewBox.className = "layout-preview-box";
+
+            tpl.cells.forEach(c => {
+                const cellEl = document.createElement("div");
+                cellEl.className = "layout-cell-preview";
+                cellEl.style.left = `${c.x * 100}%`;
+                cellEl.style.top = `${c.y * 100}%`;
+                cellEl.style.width = `calc(${c.w * 100}% - 2px)`;
+                cellEl.style.height = `calc(${c.h * 100}% - 2px)`;
+                previewBox.appendChild(cellEl);
+            });
+
+            card.appendChild(previewBox);
+
+            card.addEventListener("click", () => {
+                setTemplate(tpl);
+            });
+
+            layoutCardsGrid.appendChild(card);
+        });
+    }
+
+    function setTemplate(tpl) {
+        currentTemplate = tpl;
+        document.querySelectorAll(".layout-card").forEach(c => c.classList.remove("active"));
+        renderLayoutThumbnails(document.querySelector(".layout-filter-pill.active")?.dataset.filter || "all");
+
+        ensureCellTransforms();
+        layoutNameMeta.innerHTML = `Layout: <strong>${tpl.name}</strong>`;
+        renderCollage();
+        updateStatus(`Applied layout: ${tpl.name}`);
+    }
+
+    function ensureCellTransforms() {
+        while (cellTransforms.length < currentTemplate.cells.length) {
+            cellTransforms.push({ panX: 0, panY: 0, zoom: 1.0, rotate: 0, flipH: false });
+        }
+    }
+
+    document.querySelectorAll(".layout-filter-pill").forEach(pill => {
+        pill.addEventListener("click", function () {
+            document.querySelectorAll(".layout-filter-pill").forEach(p => p.classList.remove("active"));
+            this.classList.add("active");
+            renderLayoutThumbnails(this.dataset.filter);
+        });
+    });
+
+    // ==========================================
+    // RENDER COLLAGE TO CANVAS
+    // ==========================================
+    function getCanvasDimensions() {
+        const baseRes = parseInt(exportResolution.value, 10) || 1200;
+        let w = baseRes;
+        let h = baseRes;
+
+        const [rw, rh] = config.aspectRatio.split(":").map(Number);
+        if (rw && rh) {
+            if (rw >= rh) {
+                w = baseRes;
+                h = Math.round((baseRes / rw) * rh);
+            } else {
+                h = baseRes;
+                w = Math.round((baseRes / rh) * rw);
+            }
+        }
+        return { w, h };
+    }
+
+    function drawRoundedRectPath(c, x, y, width, height, radius) {
+        c.beginPath();
+        if (typeof c.roundRect === "function") {
+            c.roundRect(x, y, width, height, Math.min(radius, width / 2, height / 2));
+        } else {
+            const r = Math.min(radius, width / 2, height / 2);
+            c.moveTo(x + r, y);
+            c.lineTo(x + width - r, y);
+            c.quadraticCurveTo(x + width, y, x + width, y + r);
+            c.lineTo(x + width, y + height - r);
+            c.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+            c.lineTo(x + r, y + height);
+            c.quadraticCurveTo(x, y + height, x, y + height - r);
+            c.lineTo(x, y + r);
+            c.quadraticCurveTo(x, y, x + r, y);
+            c.closePath();
+        }
+    }
+
+    function getFilterCss() {
+        switch (config.filter) {
+            case "vivid": return "saturate(145%) contrast(115%)";
+            case "bw": return "grayscale(100%) contrast(120%)";
+            case "sepia": return "sepia(80%) contrast(105%)";
+            case "warm": return "sepia(30%) saturate(120%)";
+            case "cool": return "grayscale(15%) saturate(125%) hue-rotate(15deg)";
+            default: return "none";
+        }
+    }
+
+    function renderCollage() {
+        const { w, h } = getCanvasDimensions();
+        canvas.width = w;
+        canvas.height = h;
+
+        resolutionMeta.innerHTML = `Output: <strong>${w} × ${h} px</strong>`;
+        photosCountMeta.innerHTML = `Photos: <strong>${photos.filter(Boolean).length} / ${currentTemplate.cells.length}</strong>`;
+
+        // Background
+        ctx.clearRect(0, 0, w, h);
+        if (config.bgColor) {
+            ctx.fillStyle = config.bgColor;
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        const scale = w / 1200; // Relative scaling factor for spacing/radius
+        const pad = Math.round(config.padding * scale);
+        const gap = Math.round(config.spacing * scale);
+        const rad = Math.round(config.radius * scale);
+
+        const innerW = Math.max(10, w - (2 * pad));
+        const innerH = Math.max(10, h - (2 * pad));
+
+        ensureCellTransforms();
+
+        currentTemplate.cells.forEach((cell, idx) => {
+            const rawX = pad + cell.x * innerW;
+            const rawY = pad + cell.y * innerH;
+            const rawW = cell.w * innerW;
+            const rawH = cell.h * innerH;
+
+            const gapHalf = gap / 2.0;
+            const cellX = Math.round(rawX + (cell.x > 0 ? gapHalf : 0));
+            const cellY = Math.round(rawY + (cell.y > 0 ? gapHalf : 0));
+            const cellW = Math.max(1, Math.round(rawW - (cell.x > 0 ? gapHalf : 0) - ((cell.x + cell.w) < 0.999 ? gapHalf : 0)));
+            const cellH = Math.max(1, Math.round(rawH - (cell.y > 0 ? gapHalf : 0) - ((cell.y + cell.h) < 0.999 ? gapHalf : 0)));
+
+            // Cell bounds cache for hit-testing pointer clicks
+            cell._computed = { x: cellX, y: cellY, w: cellW, h: cellH };
+
+            ctx.save();
+            drawRoundedRectPath(ctx, cellX, cellY, cellW, cellH, rad);
+
+            const img = photos[idx];
+            if (img) {
+                ctx.clip();
+
+                const t = cellTransforms[idx];
+                ctx.save();
+                ctx.filter = getFilterCss();
+
+                // Object-fit: cover logic
+                const imgW = img.naturalWidth || img.width;
+                const imgH = img.naturalHeight || img.height;
+
+                // Account for 90/270 deg rotation swapping aspect
+                const isSwapped = (t.rotate === 90 || t.rotate === 270);
+                const effImgW = isSwapped ? imgH : imgW;
+                const effImgH = isSwapped ? imgW : imgH;
+
+                const rCover = Math.max(cellW / effImgW, cellH / effImgH) * t.zoom;
+                const drawW = imgW * rCover;
+                const drawH = imgH * rCover;
+
+                // Center of cell + user pan
+                const centerX = cellX + (cellW / 2) + (t.panX * scale);
+                const centerY = cellY + (cellH / 2) + (t.panY * scale);
+
+                ctx.translate(centerX, centerY);
+                if (t.rotate) ctx.rotate((t.rotate * Math.PI) / 180);
+                if (t.flipH) ctx.scale(-1, 1);
+
+                ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+
+                ctx.restore();
+            } else {
+                // Empty placeholder cell
+                ctx.fillStyle = document.documentElement.getAttribute("data-theme") === "light" ? "#f1f3f7" : "#191d28";
+                ctx.fill();
+
+                // Draw sleek "+" icon
+                ctx.fillStyle = document.documentElement.getAttribute("data-theme") === "light" ? "#949aa8" : "#454d60";
+                ctx.font = `600 ${Math.max(16, Math.round(28 * scale))}px sans-serif`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("+", cellX + cellW / 2, cellY + cellH / 2 - 8 * scale);
+
+                ctx.font = `500 ${Math.max(11, Math.round(13 * scale))}px sans-serif`;
+                ctx.fillText("Add Photo", cellX + cellW / 2, cellY + cellH / 2 + 16 * scale);
+            }
+
+            // Highlight selected cell
+            if (idx === selectedCellIndex) {
+                ctx.strokeStyle = "#b7f7d4";
+                ctx.lineWidth = Math.max(3, Math.round(4 * scale));
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        });
+
+        // Draw Caption / Title if configured
+        const captionText = captionTextInput.value.trim();
+        const captionPos = captionPosSelect.value;
+        if (captionText && captionPos !== "none") {
+            ctx.save();
+            const fontFam = captionFontSelect.value;
+            const userSize = parseInt(captionSizeInput.value, 10) || 36;
+            const captionScaledSize = Math.round(userSize * scale);
+
+            ctx.font = `bold ${captionScaledSize}px ${fontFam}`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = captionColorPicker.value;
+
+            // Subtle readable shadow
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowBlur = 4;
+
+            const textX = w / 2;
+            const textY = captionPos === "top" ? (pad / 2 || 35 * scale) : (h - (pad / 2 || 35 * scale));
+            ctx.fillText(captionText, textX, textY);
+            ctx.restore();
+        }
+
+        applyZoom();
+    }
+
+    // ==========================================
+    // ZOOM & FIT
+    // ==========================================
+    function applyZoom() {
+        canvasStage.style.transform = `scale(${currentZoom})`;
+        zoomLevelLabel.textContent = `${Math.round(currentZoom * 100)}%`;
+    }
+
+    function fitToScreen() {
+        const availW = viewport.clientWidth - 50;
+        const availH = viewport.clientHeight - 50;
+        const { w, h } = getCanvasDimensions();
+        currentZoom = Math.min(1.0, availW / w, availH / h);
+        currentZoom = Math.max(0.15, currentZoom);
+        applyZoom();
+    }
+
+    zoomInBtn.addEventListener("click", () => { currentZoom = Math.min(2.5, currentZoom + 0.15); applyZoom(); });
+    zoomOutBtn.addEventListener("click", () => { currentZoom = Math.max(0.15, currentZoom - 0.15); applyZoom(); });
+    fitZoomBtn.addEventListener("click", fitToScreen);
+
+    // ==========================================
+    // PHOTO UPLOAD & MANAGEMENT
+    // ==========================================
+    function handleMultipleFiles(fileList) {
+        const files = Array.from(fileList).filter(f => f.type.startsWith("image/"));
+        if (!files.length) return;
+
+        let loadedCount = 0;
+        const newImages = [];
+
+        files.forEach((file, i) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    newImages[i] = img;
+                    loadedCount++;
+
+                    if (loadedCount === files.length) {
+                        applyLoadedImages(newImages.filter(Boolean));
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function applyLoadedImages(imgArray) {
+        // Find best template matching photo count if starting fresh
+        if (!photos.filter(Boolean).length) {
+            const count = Math.min(9, Math.max(2, imgArray.length));
+            const match = TEMPLATES.find(t => t.count === count) || TEMPLATES[5];
+            setTemplate(match);
+        }
+
+        // Fill slots with images
+        imgArray.forEach((img, i) => {
+            if (i < currentTemplate.cells.length) {
+                photos[i] = img;
+            }
+        });
+
+        dropzone.style.display = "none";
+        canvasStage.style.display = "block";
+
+        enableControls(true);
+        renderCollage();
+        fitToScreen();
+        updateStatus(`Loaded ${imgArray.length} photos into collage.`);
+    }
+
+    function enableControls(enabled) {
+        [clearAllBtn, shuffleBtn, topDownloadBtn, exportDownloadBtn, copyClipboardBtn, zoomInBtn, zoomOutBtn, fitZoomBtn].forEach(b => {
+            if (b) b.disabled = !enabled;
+        });
+    }
+
+    addPhotosBtn.addEventListener("click", () => photoBatchInput.click());
+    dropzone.addEventListener("click", () => photoBatchInput.click());
+
+    photoBatchInput.addEventListener("change", function () {
+        if (this.files && this.files.length) {
+            handleMultipleFiles(this.files);
+            this.value = "";
+        }
+    });
+
+    // Single cell replacement
+    let pendingSlotToReplace = -1;
+    singleCellInput.addEventListener("change", function () {
+        if (this.files && this.files[0] && pendingSlotToReplace >= 0) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    photos[pendingSlotToReplace] = img;
+                    renderCollage();
+                    updateStatus(`Photo updated in slot #${pendingSlotToReplace + 1}`);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(this.files[0]);
+            this.value = "";
+        }
+    });
+
+    // Drag and Drop
+    viewport.addEventListener("dragover", e => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+    });
+
+    viewport.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+
+    viewport.addEventListener("drop", e => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+            handleMultipleFiles(e.dataTransfer.files);
+        }
+    });
+
+    // Clipboard Paste (Ctrl+V)
+    window.addEventListener("paste", e => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        const pastedFiles = [];
+        for (let item of items) {
+            if (item.kind === "file" && item.type.startsWith("image/")) {
+                pastedFiles.push(item.getAsFile());
+            }
+        }
+        if (pastedFiles.length) {
+            handleMultipleFiles(pastedFiles);
+        }
+    });
+
+    // Clear All
+    clearAllBtn.addEventListener("click", () => {
+        if (!confirm("Are you sure you want to clear all photos from the collage?")) return;
+        photos = [];
+        cellTransforms = [];
+        selectedCellIndex = -1;
+        updateSelectedCellUI();
+        dropzone.style.display = "block";
+        canvasStage.style.display = "none";
+        enableControls(false);
+        renderCollage();
+        updateStatus("Collage cleared.");
+    });
+
+    // Shuffle
+    shuffleBtn.addEventListener("click", () => {
+        if (photos.filter(Boolean).length <= 1) return;
+        // Fisher-Yates shuffle
+        for (let i = photos.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [photos[i], photos[j]] = [photos[j], photos[i]];
+            [cellTransforms[i], cellTransforms[j]] = [cellTransforms[j], cellTransforms[i]];
+        }
+        renderCollage();
+        updateStatus("Shuffled photo positions.");
+    });
+
+    // ==========================================
+    // INTERACTIVE CELL HIT-TEST & REPOSITIONING
+    // ==========================================
+    function getCellAtPointer(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
+        for (let i = 0; i < currentTemplate.cells.length; i++) {
+            const b = currentTemplate.cells[i]._computed;
+            if (b && x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    canvas.addEventListener("pointerdown", function (e) {
+        const clickedIdx = getCellAtPointer(e);
+        if (clickedIdx === -1) {
+            selectedCellIndex = -1;
+            updateSelectedCellUI();
+            renderCollage();
+            return;
+        }
+
+        selectedCellIndex = clickedIdx;
+        updateSelectedCellUI();
+        renderCollage();
+
+        // If cell is empty, trigger file picker for it!
+        if (!photos[clickedIdx]) {
+            pendingSlotToReplace = clickedIdx;
+            singleCellInput.click();
+            return;
+        }
+
+        // Prepare photo pan dragging within cell
+        isDraggingCellPhoto = true;
+        dragStartPointer = { x: e.clientX, y: e.clientY };
+        const t = cellTransforms[clickedIdx];
+        dragStartPan = { x: t.panX, y: t.panY };
+        canvas.setPointerCapture(e.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", function (e) {
+        if (!isDraggingCellPhoto || selectedCellIndex < 0) return;
+        const dx = (e.clientX - dragStartPointer.x) / currentZoom;
+        const dy = (e.clientY - dragStartPointer.y) / currentZoom;
+
+        const t = cellTransforms[selectedCellIndex];
+        t.panX = dragStartPan.x + dx;
+        t.panY = dragStartPan.y + dy;
+
+        renderCollage();
+    });
+
+    canvas.addEventListener("pointerup", function () {
+        isDraggingCellPhoto = false;
+    });
+
+    // ==========================================
+    // SELECTED CELL CONTROLS
+    // ==========================================
+    function updateSelectedCellUI() {
+        if (selectedCellIndex >= 0 && photos[selectedCellIndex]) {
+            noCellNotice.style.display = "none";
+            cellControlsWrap.style.display = "block";
+            selectedCellHeader.textContent = `Selected Photo #${selectedCellIndex + 1}`;
+
+            const t = cellTransforms[selectedCellIndex];
+            cellZoomRange.value = t.zoom;
+            valCellZoom.textContent = `${t.zoom.toFixed(1)}x`;
+        } else {
+            noCellNotice.style.display = "block";
+            cellControlsWrap.style.display = "none";
+        }
+    }
+
+    replacePhotoBtn.addEventListener("click", () => {
+        if (selectedCellIndex >= 0) {
+            pendingSlotToReplace = selectedCellIndex;
+            singleCellInput.click();
+        }
+    });
+
+    rotateCellBtn.addEventListener("click", () => {
+        if (selectedCellIndex >= 0) {
+            const t = cellTransforms[selectedCellIndex];
+            t.rotate = (t.rotate + 90) % 360;
+            renderCollage();
+        }
+    });
+
+    flipHCellBtn.addEventListener("click", () => {
+        if (selectedCellIndex >= 0) {
+            const t = cellTransforms[selectedCellIndex];
+            t.flipH = !t.flipH;
+            renderCollage();
+        }
+    });
+
+    resetCellBtn.addEventListener("click", () => {
+        if (selectedCellIndex >= 0) {
+            cellTransforms[selectedCellIndex] = { panX: 0, panY: 0, zoom: 1.0, rotate: 0, flipH: false };
+            cellZoomRange.value = 1.0;
+            valCellZoom.textContent = "1.0x";
+            renderCollage();
+        }
+    });
+
+    removePhotoBtn.addEventListener("click", () => {
+        if (selectedCellIndex >= 0) {
+            photos[selectedCellIndex] = null;
+            cellTransforms[selectedCellIndex] = { panX: 0, panY: 0, zoom: 1.0, rotate: 0, flipH: false };
+            selectedCellIndex = -1;
+            updateSelectedCellUI();
+            renderCollage();
+            updateStatus("Photo removed from cell.");
+        }
+    });
+
+    cellZoomRange.addEventListener("input", function () {
+        if (selectedCellIndex >= 0) {
+            const z = parseFloat(this.value);
+            cellTransforms[selectedCellIndex].zoom = z;
+            valCellZoom.textContent = `${z.toFixed(1)}x`;
+            renderCollage();
+        }
+    });
+
+    // ==========================================
+    // STYLING & SLIDERS
+    // ==========================================
+    canvasRatioSelect.addEventListener("change", function () {
+        config.aspectRatio = this.value;
+        renderCollage();
+        fitToScreen();
+    });
+
+    spacingRange.addEventListener("input", function () {
+        config.spacing = parseInt(this.value, 10);
+        valSpacing.textContent = `${config.spacing}px`;
+        renderCollage();
+    });
+
+    radiusRange.addEventListener("input", function () {
+        config.radius = parseInt(this.value, 10);
+        valRadius.textContent = `${config.radius}px`;
+        renderCollage();
+    });
+
+    paddingRange.addEventListener("input", function () {
+        config.padding = parseInt(this.value, 10);
+        valPadding.textContent = `${config.padding}px`;
+        renderCollage();
+    });
+
+    filterSelect.addEventListener("change", function () {
+        config.filter = this.value;
+        renderCollage();
+    });
+
+    // Color Swatches
+    document.querySelectorAll(".color-circle").forEach(circle => {
+        circle.addEventListener("click", function () {
+            document.querySelectorAll(".color-circle").forEach(c => c.classList.remove("active"));
+            this.classList.add("active");
+            config.bgColor = this.dataset.color;
+            bgColorNative.value = this.dataset.color;
+            renderCollage();
+        });
+    });
+
+    bgColorNative.addEventListener("input", function () {
+        document.querySelectorAll(".color-circle").forEach(c => c.classList.remove("active"));
+        config.bgColor = this.value;
+        renderCollage();
+    });
+
+    // Caption listeners
+    [captionTextInput, captionFontSelect, captionSizeInput, captionPosSelect, captionColorPicker].forEach(input => {
+        input.addEventListener("input", renderCollage);
+    });
+
+    exportResolution.addEventListener("change", () => {
+        renderCollage();
+        fitToScreen();
+    });
+
+    // ==========================================
+    // EXPORT & DOWNLOAD
+    // ==========================================
+    function downloadCollage() {
+        if (!photos.filter(Boolean).length) return;
+
+        const format = exportFormat.value;
+        const quality = 0.92;
+        let filename = (exportFilename.value.trim() || "makeitdoc-collage");
+        const ext = format === "image/png" ? ".png" : format === "image/webp" ? ".webp" : ".jpg";
+        if (!filename.toLowerCase().endsWith(ext)) filename += ext;
+
+        canvas.toBlob(function (blob) {
+            if (!blob) {
+                alert("Failed to export collage.");
+                return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            updateStatus(`Downloaded ${filename} successfully!`);
+        }, format, quality);
+    }
+
+    topDownloadBtn.addEventListener("click", downloadCollage);
+    exportDownloadBtn.addEventListener("click", downloadCollage);
+
+    copyClipboardBtn.addEventListener("click", function () {
+        if (!photos.filter(Boolean).length) return;
+        canvas.toBlob(function (blob) {
+            if (!blob) return;
+            try {
+                navigator.clipboard.write([
+                    new ClipboardItem({ "image/png": blob })
+                ]).then(() => {
+                    alert("Collage copied to clipboard!");
+                    updateStatus("Copied collage to clipboard!");
+                }).catch(() => {
+                    alert("Clipboard access is restricted by your browser.");
+                });
+            } catch (err) {
+                alert("Clipboard copy is not supported in this browser.");
+            }
+        }, "image/png");
+    });
+
+    // ==========================================
+    // TAB SWITCHING
+    // ==========================================
+    document.querySelectorAll(".collage-tab-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            document.querySelectorAll(".collage-tab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+
+            this.classList.add("active");
+            const target = document.getElementById(this.dataset.tab);
+            if (target) target.classList.add("active");
+        });
+    });
+
+    // Initialize layout list
+    renderLayoutThumbnails("all");
+
+});
+</script>
+
+{% endblock %}

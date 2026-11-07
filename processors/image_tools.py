@@ -264,3 +264,96 @@ def export_image(
     to_save.save(buffer, format=fmt, **save_kwargs)
     buffer.seek(0)
     return buffer.getvalue()
+
+
+def get_default_layout_boxes(count: int) -> list[Tuple[float, float, float, float]]:
+    """Generate normalized bounding boxes [x, y, w, h] for common collage layouts."""
+    if count <= 1:
+        return [(0.0, 0.0, 1.0, 1.0)]
+    elif count == 2:
+        return [(0.0, 0.0, 0.5, 1.0), (0.5, 0.0, 0.5, 1.0)]
+    elif count == 3:
+        return [(0.0, 0.0, 0.5, 1.0), (0.5, 0.0, 0.5, 0.5), (0.5, 0.5, 0.5, 0.5)]
+    elif count == 4:
+        return [
+            (0.0, 0.0, 0.5, 0.5), (0.5, 0.0, 0.5, 0.5),
+            (0.0, 0.5, 0.5, 0.5), (0.5, 0.5, 0.5, 0.5)
+        ]
+    elif count == 5:
+        return [
+            (0.0, 0.0, 0.5, 0.5), (0.5, 0.0, 0.5, 0.5),
+            (0.0, 0.5, 1/3, 0.5), (1/3, 0.5, 1/3, 0.5), (2/3, 0.5, 1/3, 0.5)
+        ]
+    elif count == 6:
+        return [
+            (0.0, 0.0, 1/3, 0.5), (1/3, 0.0, 1/3, 0.5), (2/3, 0.0, 1/3, 0.5),
+            (0.0, 0.5, 1/3, 0.5), (1/3, 0.5, 1/3, 0.5), (2/3, 0.5, 1/3, 0.5)
+        ]
+    elif count in (7, 8):
+        return [
+            (0.0, 0.0, 0.25, 0.5), (0.25, 0.0, 0.25, 0.5), (0.5, 0.0, 0.25, 0.5), (0.75, 0.0, 0.25, 0.5),
+            (0.0, 0.5, 0.25, 0.5), (0.25, 0.5, 0.25, 0.5), (0.5, 0.5, 0.25, 0.5), (0.75, 0.5, 0.25, 0.5)
+        ][:count]
+    else:  # 9 or more -> 3x3
+        boxes = []
+        for row in range(3):
+            for col in range(3):
+                boxes.append((col / 3.0, row / 3.0, 1 / 3.0, 1 / 3.0))
+        return boxes[:count]
+
+
+def create_collage(
+    images: list[Image.Image],
+    layout_boxes: Optional[list[Tuple[float, float, float, float]]] = None,
+    canvas_size: Tuple[int, int] = (1200, 1200),
+    spacing: int = 12,
+    padding: int = 12,
+    bg_color: Union[str, Tuple[int, ...]] = (255, 255, 255, 255),
+    corner_radius: int = 0,
+) -> Image.Image:
+    """Create a photo collage from images arranged according to layout bounding boxes."""
+    if not images:
+        raise ImageProcessingError("At least one image is required to build a collage.")
+
+    count = len(images)
+    boxes = layout_boxes if layout_boxes else get_default_layout_boxes(count)
+
+    canvas_w, canvas_h = canvas_size
+    collage = Image.new("RGBA", (canvas_w, canvas_h), bg_color)
+
+    inner_w = max(10, canvas_w - (2 * padding))
+    inner_h = max(10, canvas_h - (2 * padding))
+
+    for i, img in enumerate(images):
+        if i >= len(boxes):
+            break
+
+        bx, by, bw, bh = boxes[i]
+
+        raw_x = padding + bx * inner_w
+        raw_y = padding + by * inner_h
+        raw_w = bw * inner_w
+        raw_h = bh * inner_h
+
+        gap_half = spacing / 2.0
+        cell_x = int(round(raw_x + (gap_half if bx > 0 else 0)))
+        cell_y = int(round(raw_y + (gap_half if by > 0 else 0)))
+        cell_w = int(round(raw_w - (gap_half if bx > 0 else 0) - (gap_half if (bx + bw) < 0.999 else 0)))
+        cell_h = int(round(raw_h - (gap_half if by > 0 else 0) - (gap_half if (by + bh) < 0.999 else 0)))
+
+        cell_w = max(1, cell_w)
+        cell_h = max(1, cell_h)
+
+        # Fit image into cell using centered crop
+        fitted = ImageOps.fit(img.convert("RGBA"), (cell_w, cell_h), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+
+        if corner_radius > 0:
+            mask = Image.new("L", (cell_w, cell_h), 0)
+            mask_draw = ImageDraw.Draw(mask)
+            mask_draw.rounded_rectangle((0, 0, cell_w, cell_h), radius=corner_radius, fill=255)
+            collage.paste(fitted, (cell_x, cell_y), mask=mask)
+        else:
+            collage.paste(fitted, (cell_x, cell_y), mask=fitted)
+
+    return collage
+

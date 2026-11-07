@@ -1313,3 +1313,7 @@ def protect_pdf(request):
 
 def image_editor(request):
     return render(request, "tools/image_editor.html")
+
+
+def collage_maker(request):
+    return render(request, "tools/collage_maker.html")

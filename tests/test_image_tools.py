@@ -10,6 +10,8 @@ from processors.image_tools import (
     adjust_image,
     add_text_to_image,
     export_image,
+    create_collage,
+    get_default_layout_boxes,
     ImageProcessingError,
 )
 
@@ -85,6 +87,19 @@ class TestImageTools(unittest.TestCase):
         self.assertTrue(len(jpeg_bytes) > 0)
         opened_jpg = Image.open(io.BytesIO(jpeg_bytes))
         self.assertEqual(opened_jpg.format, "JPEG")
+
+    def test_get_default_layout_boxes(self):
+        boxes_2 = get_default_layout_boxes(2)
+        self.assertEqual(len(boxes_2), 2)
+        boxes_4 = get_default_layout_boxes(4)
+        self.assertEqual(len(boxes_4), 4)
+
+    def test_create_collage(self):
+        img2 = Image.new("RGBA", (150, 150), color=(0, 0, 255, 255))
+        collage = create_collage([self.img, img2], canvas_size=(600, 600), spacing=8, padding=10, corner_radius=12)
+        self.assertEqual(collage.size, (600, 600))
+        self.assertEqual(collage.mode, "RGBA")
+
 
 
 if __name__ == "__main__":

@@ -79,7 +79,7 @@
                     <span class="nav-icon">▨</span>
                     <span>Image Editor</span>
                 </a>
-                <a href="{% url 'tool_page' 'collage-maker' %}" class="nav-link">
+                <a href="{% url 'collage_maker' %}" class="nav-link {% if request.resolver_match.url_name == 'collage_maker' %}active{% endif %}">
                     <span class="nav-icon">▦</span>
                     <span>Collage Maker</span>
                 </a>
